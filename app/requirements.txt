@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+celery
+pydantic
+trafilatura          # For robust scraping
+langchain
+python-dotenv
+redis
+
+asyncpg                 # PostgreSQL async driver
+SQLAlchemy[asyncio]     # SQLAlchemy core with async support
+alembic

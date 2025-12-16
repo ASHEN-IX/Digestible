@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. The API Gateway Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      # Local environment variables for connectivity
+      - REDIS_URL=redis://redis:6379/0
+      - DB_HOST=db  # Hostname for the local Postgres container
+      - DB_NAME=digestible_db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - PYTHONPATH=/app
+    depends_on:
+      - redis
+      - db
+
+  # 2. The Task Worker Service
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      # Local environment variables for connectivity
+      - REDIS_URL=redis://redis:6379/0
+      - DB_HOST=db  # Hostname for the local Postgres container
+      - DB_NAME=digestible_db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - PYTHONPATH=/app
+      # Add environment for external APIs (e.g., OpenAI, S3)
+      - OPENAI_API_KEY=your_openai_key
+      - AWS_S3_BUCKET=your-bucket-name
+    depends_on:
+      - redis
+      - db
+
+  # 3. The Redis Message Broker
+  redis:
+    image: "redis:latest"
+    expose:
+      - 6379
+    # Volumes are optional for Redis locally but good practice
+    # volumes:
+    #   - redis_data:/data 
+
+  # 4. The Local PostgreSQL Persistence Layer (for Dev)
+  db:
+    image: "postgres:14-alpine"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=digestible_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+
+volumes:
+  postgres_data:
+  # redis_data: # Uncomment if you decide to add Redis persistence
