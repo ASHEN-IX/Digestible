@@ -22,5 +22,7 @@ async def test_root_endpoint():
         response = await client.get("/")
         assert response.status_code == 200
         data = response.json()
-        assert "message" in data
-        assert "Digestible" in data["message"]
+        assert "app" in data
+        assert data["app"] == "Digestible"
+        assert "status" in data
+        assert data["status"] == "operational"
