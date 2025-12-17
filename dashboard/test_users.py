@@ -34,7 +34,7 @@ class UserAPITest(APITestCase):
 
     def test_login_api(self):
         """Test user login via API"""
-        url = reverse('users:api_login')
+        url = reverse('api_login')
         data = {
             'username': 'testuser',
             'password': 'testpass123'
