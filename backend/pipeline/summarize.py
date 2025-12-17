@@ -24,14 +24,14 @@ async def summarize_article(chunks: List[str], title: str) -> str:
 
     summary = f"""
     [PLACEHOLDER SUMMARY]
-    
+
     Title: {title}
     Chunks processed: {len(chunks)}
     Total words: {total_words}
-    
-    This is a placeholder summary. In Phase 1, this will be replaced with 
+
+    This is a placeholder summary. In Phase 1, this will be replaced with
     AI-generated summaries using LLMs.
-    
+
     Key points will be extracted and formatted as:
     • Point 1
     • Point 2

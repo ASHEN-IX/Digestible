@@ -2,12 +2,13 @@
 API routes for article ingestion
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, HttpUrl
 from typing import Optional
 
-from backend.database import get_db, Article, ArticleStatus, AsyncSessionLocal
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from pydantic import BaseModel, HttpUrl
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.database import Article, ArticleStatus, AsyncSessionLocal, get_db
 from backend.pipeline import process_article
 
 router = APIRouter(prefix="/api/v1", tags=["articles"])
@@ -116,7 +117,8 @@ async def delete_article(article_id: str, db: AsyncSession = Depends(get_db)):
     """
     Delete an article
     """
-    from sqlalchemy import select, delete as sql_delete
+    from sqlalchemy import delete as sql_delete
+    from sqlalchemy import select
 
     result = await db.execute(select(Article).where(Article.id == article_id))
     article = result.scalar_one_or_none()

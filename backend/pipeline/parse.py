@@ -2,9 +2,10 @@
 Stage 2: PARSE - Extract clean article text from HTML
 """
 
-from typing import Optional, Dict
-from bs4 import BeautifulSoup
 import re
+from typing import Dict, Optional
+
+from bs4 import BeautifulSoup
 
 
 async def parse_article(html: str) -> Optional[Dict[str, str]]:

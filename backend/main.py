@@ -2,12 +2,13 @@
 FastAPI application main entry point
 """
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from backend.config import get_settings
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend.api import articles_router
+from backend.config import get_settings
 
 settings = get_settings()
 

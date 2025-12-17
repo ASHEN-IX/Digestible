@@ -2,9 +2,9 @@
 Stage 1: FETCH - Download HTML content from URL
 """
 
-import asyncio
-import httpx
 from typing import Optional
+
+import httpx
 
 from backend.config import get_settings
 

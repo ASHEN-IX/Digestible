@@ -3,6 +3,7 @@ Stage 3: CHUNK - Split article into processable segments
 """
 
 from typing import List
+
 from backend.config import get_settings
 
 settings = get_settings()

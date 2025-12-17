@@ -2,18 +2,20 @@
 Database models for Digestible
 """
 
+import enum
+import uuid
+
 from sqlalchemy import (
     Column,
     DateTime,
-    Enum as SQLEnum,
     Integer,
     String,
     Text,
 )
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
 from sqlalchemy.sql import func
-from datetime import datetime
-import enum
-import uuid
 
 from .connection import Base
 
@@ -50,9 +52,7 @@ class Article(Base):
     summary = Column(Text, nullable=True)
 
     # Pipeline tracking
-    status = Column(
-        SQLEnum(ArticleStatus), default=ArticleStatus.PENDING, nullable=False
-    )
+    status = Column(SQLEnum(ArticleStatus), default=ArticleStatus.PENDING, nullable=False)
     error_message = Column(Text, nullable=True)
 
     # Metadata
@@ -61,9 +61,7 @@ class Article(Base):
 
     # Timestamps
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(
-        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
-    )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     completed_at = Column(DateTime, nullable=True)
 
     def __repr__(self):

@@ -3,7 +3,7 @@ Stage 5: RENDER - Convert summary to output formats
 Phase 0: Placeholder implementation
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 async def render_article(summary: str, format: str = "text") -> Dict[str, Any]:

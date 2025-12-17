@@ -2,17 +2,18 @@
 Pipeline Orchestrator - Coordinates all pipeline stages
 """
 
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from datetime import datetime
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.database.models import Article, ArticleStatus
+
+from .chunk import chunk_article
 from .fetch import fetch_article
 from .parse import parse_article
-from .chunk import chunk_article
-from .summarize import summarize_article
 from .render import render_article
+from .summarize import summarize_article
 
 
 async def process_article(article_id: str, db: AsyncSession) -> bool:
@@ -82,7 +83,7 @@ async def process_article(article_id: str, db: AsyncSession) -> bool:
         article.status = ArticleStatus.RENDERING
         await db.commit()
 
-        rendered = await render_article(summary, format="text")
+        await render_article(summary, format="text")
 
         # Mark as completed
         article.status = ArticleStatus.COMPLETED
