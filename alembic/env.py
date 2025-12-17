@@ -7,7 +7,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # Add backend to path
-sys.path.insert(0, '/app')
+sys.path.insert(0, "/app")
 
 # Import models and config
 from backend.database import Base
@@ -72,7 +72,7 @@ if context.is_offline_mode():
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-    
+
     with context.begin_transaction():
         context.run_migrations()
 else:

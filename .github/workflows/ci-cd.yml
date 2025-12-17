@@ -131,7 +131,7 @@ jobs:
 
     - name: Run Django tests
       run: |
-        python manage.py test tests/dashboard/ --verbosity=2
+        python manage.py test tests.dashboard --verbosity=2
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         DJANGO_SECRET_KEY: test-secret-key
