@@ -10,7 +10,8 @@ from django.http import JsonResponse
 import json
 
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer
+from .models import UserPreference
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -27,7 +28,20 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['patch'])
+    @action(detail=False, methods=['get', 'patch'])
+    def preferences(self, request):
+        """Get or update user preferences"""
+        preference, created = UserPreference.objects.get_or_create(user=request.user)
+
+        if request.method == 'PATCH':
+            serializer = UserPreferenceSerializer(preference, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserPreferenceSerializer(preference)
+        return Response(serializer.data)
     def update_profile(self, request):
         """Update current user profile"""
         user = request.user
@@ -56,7 +70,7 @@ def login_view(request):
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
-                        'full_name': user.full_name,
+                        'full_name': user.get_full_name() or user.username,
                     }
                 })
             else:

@@ -83,16 +83,31 @@ WSGI_APPLICATION = 'digestible.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DATABASE_NAME', 'digestible'),
-        'USER': os.getenv('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.getenv('DATABASE_PORT', '5432'),
+import dj_database_url
+
+# Handle asyncpg URL for Django (convert postgresql+asyncpg to postgresql)
+database_url = os.getenv('DATABASE_URL', '')
+if database_url.startswith('postgresql+asyncpg://'):
+    database_url = database_url.replace('postgresql+asyncpg://', 'postgresql://')
+
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url, conn_max_age=600)
     }
-}
+    # Fix SSL options for psycopg2
+    if 'OPTIONS' in DATABASES['default'] and 'ssl' in DATABASES['default']['OPTIONS']:
+        DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DATABASE_NAME', 'digestible'),
+            'USER': os.getenv('DATABASE_USER', 'postgres'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+            'PORT': os.getenv('DATABASE_PORT', '5432'),
+        }
+    }
 
 
 # Password validation

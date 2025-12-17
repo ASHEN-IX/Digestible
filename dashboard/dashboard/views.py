@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
+from django.contrib.auth.models import User
 import requests
 
 
@@ -83,29 +84,29 @@ def register_view(request):
         return redirect('dashboard:home')
 
     if request.method == 'POST':
-        # Handle registration via API
-        try:
-            response = requests.post(
-                f"{request.scheme}://{request.get_host()}/api/auth/register/",
-                json={
-                    'username': request.POST.get('username'),
-                    'email': request.POST.get('email'),
-                    'password': request.POST.get('password'),
-                },
-                timeout=10
-            )
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
 
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('success'):
-                    messages.success(request, 'Account created successfully! Please log in.')
-                    return redirect('dashboard:login')
-                else:
-                    messages.error(request, data.get('error', 'Registration failed'))
-            else:
-                messages.error(request, 'Registration failed')
-
-        except requests.RequestException:
-            messages.error(request, 'Unable to connect to registration service')
+        # Basic validation
+        if not all([username, email, password1, password2]):
+            messages.error(request, 'All fields are required')
+        elif password1 != password2:
+            messages.error(request, 'Passwords do not match')
+        elif len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters')
+        else:
+            try:
+                # Create user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1
+                )
+                messages.success(request, 'Account created successfully! Please log in.')
+                return redirect('dashboard:login')
+            except Exception as e:
+                messages.error(request, f'Registration failed: {str(e)}')
 
     return render(request, 'dashboard/register.html')
