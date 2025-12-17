@@ -63,6 +63,7 @@ jobs:
         pytest ../tests/backend/ -v --cov=backend --cov-report=xml
       env:
         REDIS_URL: redis://localhost:6379/0
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
   # Test Dashboard (Django)
   test-dashboard:
