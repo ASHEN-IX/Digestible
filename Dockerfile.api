@@ -1,12 +1,23 @@
-# Dockerfile.api
+# Phase 0 - FastAPI Backend
 FROM python:3.11-slim
-WORKDIR /app
-ENV PYTHONPATH=/app
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir --timeout=100 -r requirements.txt
 
+WORKDIR /app
+
+# Set environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1
+
+# Install dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY backend/ ./backend/
+COPY alembic/ ./alembic/
 COPY alembic.ini .
-COPY alembic ./alembic
-COPY app ./app
-# Command to run the FastAPI server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

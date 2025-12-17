@@ -1,0 +1,7 @@
+# Root requirements - Common dependencies
+python-dotenv==1.0.0
+
+# Development dependencies
+black==24.1.1
+ruff==0.1.14
+pre-commit==3.5.0

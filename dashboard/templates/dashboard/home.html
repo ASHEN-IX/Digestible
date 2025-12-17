@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Digestible{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Welcome to Digestible</h1>
+        <p class="lead">Turn your 'Read Later' graveyard into an active audio playlist.</p>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Submit New Article</h5>
+            </div>
+            <div class="card-body">
+                <form id="article-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="article-url" class="form-label">Article URL</label>
+                        <input type="url" class="form-control" id="article-url" placeholder="https://example.com/article" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Submit Article
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="articles-list">
+            <h3>Your Articles</h3>
+            <div id="articles-container">
+                <p class="text-muted">Loading articles...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h3 id="total-count">-</h3>
+                        <small class="text-muted">Total</small>
+                    </div>
+                    <div class="col-6">
+                        <h3 id="completed-count">-</h3>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

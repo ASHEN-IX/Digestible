@@ -1,65 +1,80 @@
 import asyncio
-from logging.config import fileConfig
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
-from app.database.models import Base, Article
-
-# --- PATH AND MODEL IMPORTS ---
-import os
 import sys
+import os
+from logging.config import fileConfig
+from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy import pool
+from alembic import context
 
-# Ensure the root directory is in the path
-sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+# Add backend to path
+sys.path.insert(0, '/app')
 
-from app.database.models import Base  # Alembic scans this
-from app.database.core import DATABASE_URL
+# Import models and config
+from backend.database import Base
+from backend.config import get_settings
 
-# --- CONFIGURATION ---
+# Alembic Config object
 config = context.config
+settings = get_settings()
+
+# Setup logging
 if config.config_file_name is not None:
     try:
         fileConfig(config.config_file_name)
     except Exception:
-        print("Skipping logging config - formatters key not found in ini")
+        pass  # Skip if logging config missing
+
+# Set target metadata
 target_metadata = Base.metadata
 
+# Set database URL from settings to override alembic.ini
+config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.database_url)
+
+
 def do_run_migrations(connection):
+    """Run migrations in 'online' mode"""
     context.configure(
-        connection=connection, 
+        connection=connection,
         target_metadata=target_metadata,
-        render_as_batch=True
+        compare_type=True,
     )
+
     with context.begin_transaction():
         context.run_migrations()
 
+
 async def run_async_migrations():
-    # 1. Ensure the URL uses the asyncpg driver
-    # We want: postgresql+asyncpg://user:password@db:5432/digestible_db
-    url = DATABASE_URL
-    if "asyncpg" not in url:
-        url = url.replace("postgresql://", "postgresql+asyncpg://")
-
-    configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = url
-
-    # 2. Create the engine using the async-specific function
+    """Run migrations using async engine"""
     connectable = async_engine_from_config(
-        configuration,
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-    
+
     await connectable.dispose()
+
+
 def run_migrations_online():
+    """Entry point for online migrations"""
     asyncio.run(run_async_migrations())
 
+
 if context.is_offline_mode():
-    context.configure(url=DATABASE_URL, target_metadata=target_metadata, literal_binds=True)
+    # Offline mode (SQL script generation)
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    
     with context.begin_transaction():
         context.run_migrations()
 else:
+    # Online mode
     run_migrations_online()
