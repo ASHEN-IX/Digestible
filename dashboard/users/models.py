@@ -43,9 +43,6 @@ def create_user_preferences(sender, instance, created, **kwargs):
     if created:
         UserPreference.objects.create(user=instance)
 
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip() or self.username
-
 
 class UserProfile(models.Model):
     """
@@ -60,6 +57,9 @@ class UserProfile(models.Model):
     # Statistics
     articles_submitted = models.PositiveIntegerField(default=0)
     articles_processed = models.PositiveIntegerField(default=0)
+
+    def full_name(self):
+        return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
 
     def __str__(self):
         return f"Profile for {self.user.username}"

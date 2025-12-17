@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 import requests
 
 
@@ -48,36 +49,17 @@ def login_view(request):
         return redirect("dashboard:home")
 
     if request.method == "POST":
-        # Handle login via API
-        try:
-            response = requests.post(
-                f"{request.scheme}://{request.get_host()}/api/auth/login/",
-                json={
-                    "username": request.POST.get("username"),
-                    "password": request.POST.get("password"),
-                },
-                timeout=10,
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success"):
-                    # Set session from API response
-                    request.session["_auth_user_id"] = str(data["user"]["id"])
-                    request.session["_auth_user_backend"] = (
-                        "django.contrib.auth.backends.ModelBackend"
-                    )
-                    messages.success(
-                        request, f"Welcome back, {data['user']['username']}!"
-                    )
-                    return redirect("dashboard:home")
-                else:
-                    messages.error(request, data.get("error", "Login failed"))
-            else:
-                messages.error(request, "Login failed")
-
-        except requests.RequestException:
-            messages.error(request, "Unable to connect to authentication service")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        
+        # Authenticate directly with Django
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Welcome back, {user.username}!")
+            return redirect("dashboard:home")
+        else:
+            messages.error(request, "Invalid username or password")
 
     return render(request, "dashboard/login.html")
 

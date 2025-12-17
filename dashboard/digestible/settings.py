@@ -179,3 +179,7 @@ FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
 
 # Redis settings
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+# Authentication settings
+LOGIN_URL = "dashboard:login"
+LOGOUT_REDIRECT_URL = "dashboard:login"
