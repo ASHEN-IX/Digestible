@@ -1,0 +1,65 @@
+import asyncio
+from logging.config import fileConfig
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
+from alembic import context
+from app.database.models import Base, Article
+
+# --- PATH AND MODEL IMPORTS ---
+import os
+import sys
+
+# Ensure the root directory is in the path
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+
+from app.database.models import Base  # Alembic scans this
+from app.database.core import DATABASE_URL
+
+# --- CONFIGURATION ---
+config = context.config
+if config.config_file_name is not None:
+    try:
+        fileConfig(config.config_file_name)
+    except Exception:
+        print("Skipping logging config - formatters key not found in ini")
+target_metadata = Base.metadata
+
+def do_run_migrations(connection):
+    context.configure(
+        connection=connection, 
+        target_metadata=target_metadata,
+        render_as_batch=True
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+async def run_async_migrations():
+    # 1. Ensure the URL uses the asyncpg driver
+    # We want: postgresql+asyncpg://user:password@db:5432/digestible_db
+    url = DATABASE_URL
+    if "asyncpg" not in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://")
+
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = url
+
+    # 2. Create the engine using the async-specific function
+    connectable = async_engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    
+    await connectable.dispose()
+def run_migrations_online():
+    asyncio.run(run_async_migrations())
+
+if context.is_offline_mode():
+    context.configure(url=DATABASE_URL, target_metadata=target_metadata, literal_binds=True)
+    with context.begin_transaction():
+        context.run_migrations()
+else:
+    run_migrations_online()

@@ -1,41 +1,43 @@
 version: '3.8'
 
-services:
+
   # 1. The API Gateway Service
+services:
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
+    volumes:
+      - .:/app  # This is the MAGIC line: it syncs your computer with the container
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/digestible_db
+      - PYTHONPATH=/app
     ports:
       - "8000:8000"
-    environment:
-      # Local environment variables for connectivity
-      - REDIS_URL=redis://redis:6379/0
-      - DB_HOST=db  # Hostname for the local Postgres container
-      - DB_NAME=digestible_db
-      - DB_USER=user
-      - DB_PASSWORD=password
-      - PYTHONPATH=/app
     depends_on:
-      - redis
       - db
+      - redis
 
   # 2. The Task Worker Service
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
+    # Add this environment variable:
     environment:
-      # Local environment variables for connectivity
+      - PYTHONPATH=/app
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - REDIS_URL=redis://redis:6379/0
       - DB_HOST=db  # Hostname for the local Postgres container
       - DB_NAME=digestible_db
       - DB_USER=user
       - DB_PASSWORD=password
-      - PYTHONPATH=/app
       # Add environment for external APIs (e.g., OpenAI, S3)
       - OPENAI_API_KEY=your_openai_key
       - AWS_S3_BUCKET=your-bucket-name
+    # Ensure the command points to the package:
+    command: celery -A tasks worker --loglevel=info
     depends_on:
       - redis
       - db

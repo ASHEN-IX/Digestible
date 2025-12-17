@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONPATH=/app
 COPY app/requirements.txt .
-RUN pip install --no-cache-dir --timeout=100 -r requirements.txt && pip install transformers
+RUN pip install --no-cache-dir --timeout=300 --retries=5 -r requirements.txt && pip install --timeout=300 --retries=5 transformers
 
 COPY app /app
 WORKDIR /app/app

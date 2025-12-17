@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-from tasks import scrape_and_process_link
+from app.database.core import get_session
+from app.database.models import Article
+from app.tasks import scrape_and_process_link
 
 app = FastAPI(title="Digestible API Gateway")
 
@@ -55,8 +56,14 @@ async def get_task_status(task_id: str):
         'FAILURE': 'Failed'
     }
 
+    result = None
+    if task.state == 'SUCCESS':
+        result = task.result
+    elif task.state == 'FAILURE':
+        result = str(task.info)
+
     return {
         "task_id": task_id,
         "status": status_map.get(task.state, task.state),
-        "result": task.result if task.ready() else None
+        "result": result
     }

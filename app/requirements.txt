@@ -8,5 +8,6 @@ python-dotenv
 redis
 
 asyncpg                 # PostgreSQL async driver
+psycopg2-binary         # PostgreSQL sync driver for Alembic
 SQLAlchemy[asyncio]     # SQLAlchemy core with async support
 alembic
