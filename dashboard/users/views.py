@@ -18,23 +18,26 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint for user management
     """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def me(self, request):
         """Get current user information"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get', 'patch'])
+    @action(detail=False, methods=["get", "patch"])
     def preferences(self, request):
         """Get or update user preferences"""
         preference, created = UserPreference.objects.get_or_create(user=request.user)
 
-        if request.method == 'PATCH':
-            serializer = UserPreferenceSerializer(preference, data=request.data, partial=True)
+        if request.method == "PATCH":
+            serializer = UserPreferenceSerializer(
+                preference, data=request.data, partial=True
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -42,6 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         serializer = UserPreferenceSerializer(preference)
         return Response(serializer.data)
+
     def update_profile(self, request):
         """Update current user profile"""
         user = request.user
@@ -52,103 +56,87 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 def login_view(request):
     """API login endpoint"""
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
+            username = data.get("username")
+            password = data.get("password")
 
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'full_name': user.get_full_name() or user.username,
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "user": {
+                            "id": user.id,
+                            "username": user.username,
+                            "email": user.email,
+                            "full_name": user.get_full_name() or user.username,
+                        },
                     }
-                })
+                )
             else:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Invalid credentials'
-                }, status=401)
+                return JsonResponse(
+                    {"success": False, "error": "Invalid credentials"}, status=401
+                )
         except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid JSON'
-            }, status=400)
+            return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
 
-    return JsonResponse({
-        'success': False,
-        'error': 'Method not allowed'
-    }, status=405)
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
 
 
 @require_POST
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 def logout_view(request):
     """API logout endpoint"""
     logout(request)
-    return JsonResponse({'success': True})
+    return JsonResponse({"success": True})
 
 
 def register_view(request):
     """API registration endpoint"""
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            username = data.get('username')
-            email = data.get('email')
-            password = data.get('password')
+            username = data.get("username")
+            email = data.get("email")
+            password = data.get("password")
 
             if User.objects.filter(username=username).exists():
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Username already exists'
-                }, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Username already exists"}, status=400
+                )
 
             if User.objects.filter(email=email).exists():
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Email already exists'
-                }, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Email already exists"}, status=400
+                )
 
             user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password
+                username=username, email=email, password=password
             )
 
             # Create user profile
             UserProfile.objects.create(user=user)
 
-            return JsonResponse({
-                'success': True,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
+            return JsonResponse(
+                {
+                    "success": True,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                    },
                 }
-            })
+            )
 
         except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid JSON'
-            }, status=400)
+            return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
 
-    return JsonResponse({
-        'success': False,
-        'error': 'Method not allowed'
-    }, status=405)
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)

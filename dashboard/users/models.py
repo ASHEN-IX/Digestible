@@ -9,22 +9,23 @@ class UserPreference(models.Model):
     """
     User preferences for article processing
     """
+
     OUTPUT_FORMAT_CHOICES = [
-        ('audio', 'Audio (MP3)'),
-        ('text', 'Text Summary'),
-        ('both', 'Both Audio and Text'),
+        ("audio", "Audio (MP3)"),
+        ("text", "Text Summary"),
+        ("both", "Both Audio and Text"),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="preferences"
+    )
     output_format = models.CharField(
-        max_length=10,
-        choices=OUTPUT_FORMAT_CHOICES,
-        default='both'
+        max_length=10, choices=OUTPUT_FORMAT_CHOICES, default="both"
     )
     audio_quality = models.CharField(
         max_length=10,
-        choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')],
-        default='medium'
+        choices=[("low", "Low"), ("medium", "Medium"), ("high", "High")],
+        default="medium",
     )
     auto_process = models.BooleanField(default=True)
     email_notifications = models.BooleanField(default=False)
@@ -41,6 +42,7 @@ def create_user_preferences(sender, instance, created, **kwargs):
     """Create UserPreference when a new user is created"""
     if created:
         UserPreference.objects.create(user=instance)
+
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
@@ -49,10 +51,11 @@ class UserProfile(models.Model):
     """
     Extended user profile information
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     website = models.URLField(blank=True)
     location = models.CharField(max_length=100, blank=True)
-    timezone = models.CharField(max_length=50, default='UTC')
+    timezone = models.CharField(max_length=50, default="UTC")
 
     # Statistics
     articles_submitted = models.PositiveIntegerField(default=0)

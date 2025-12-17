@@ -14,6 +14,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     """
     API endpoint for articles - proxies to FastAPI backend
     """
+
     queryset = Article.objects.all()  # Required for DRF router basename
     serializer_class = ArticleSerializer
     permission_classes = [IsAuthenticated]
@@ -23,15 +24,17 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Create article via FastAPI backend"""
-        url = self.request.data.get('url')
+        url = self.request.data.get("url")
         if not url:
-            return Response({'error': 'URL is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Submit to FastAPI backend
         fastapi_response = requests.post(
             f"{settings.FASTAPI_URL}/api/v1/articles",
-            json={'url': url, 'user_id': str(self.request.user.id)},
-            timeout=30
+            json={"url": url, "user_id": str(self.request.user.id)},
+            timeout=30,
         )
 
         if fastapi_response.status_code == 202:
@@ -40,22 +43,24 @@ class ArticleViewSet(viewsets.ModelViewSet):
             # Create local Django record
             article = serializer.save(
                 user=self.request.user,
-                backend_id=backend_data['id'],
+                backend_id=backend_data["id"],
                 url=url,
-                status='PENDING'
+                status="PENDING",
             )
 
             # Update from backend response
             self._sync_with_backend(article.backend_id)
 
-            return Response(ArticleSerializer(article).data, status=status.HTTP_201_CREATED)
+            return Response(
+                ArticleSerializer(article).data, status=status.HTTP_201_CREATED
+            )
         else:
             return Response(
-                {'error': 'Failed to submit article'},
-                status=fastapi_response.status_code
+                {"error": "Failed to submit article"},
+                status=fastapi_response.status_code,
             )
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def sync(self, request, pk=None):
         """Sync article status with FastAPI backend"""
         article = self.get_object()
@@ -66,19 +71,21 @@ class ArticleViewSet(viewsets.ModelViewSet):
     def _sync_with_backend(self, backend_id):
         """Sync article data from FastAPI backend"""
         try:
-            response = requests.get(f"{settings.FASTAPI_URL}/api/v1/articles/{backend_id}")
+            response = requests.get(
+                f"{settings.FASTAPI_URL}/api/v1/articles/{backend_id}"
+            )
             if response.status_code == 200:
                 backend_data = response.json()
 
                 # Update local record
                 article = Article.objects.filter(backend_id=backend_id).first()
                 if article:
-                    article.status = backend_data['status']
-                    article.title = backend_data.get('title')
-                    article.summary = backend_data.get('summary')
-                    article.updated_at = backend_data['created_at']
+                    article.status = backend_data["status"]
+                    article.title = backend_data.get("title")
+                    article.summary = backend_data.get("summary")
+                    article.updated_at = backend_data["created_at"]
 
-                    if article.status == 'COMPLETED':
+                    if article.status == "COMPLETED":
                         article.completed_at = article.updated_at
 
                     article.save()
@@ -87,15 +94,24 @@ class ArticleViewSet(viewsets.ModelViewSet):
             # Backend might be unavailable, continue with local data
             pass
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def stats(self, request):
         """Get user article statistics"""
         user = request.user
         stats = {
-            'total': Article.objects.filter(user=user).count(),
-            'completed': Article.objects.filter(user=user, status='COMPLETED').count(),
-            'processing': Article.objects.filter(user=user, status__in=['FETCHING', 'PARSING', 'CHUNKING', 'SUMMARIZING', 'RENDERING']).count(),
-            'failed': Article.objects.filter(user=user, status='FAILED').count(),
+            "total": Article.objects.filter(user=user).count(),
+            "completed": Article.objects.filter(user=user, status="COMPLETED").count(),
+            "processing": Article.objects.filter(
+                user=user,
+                status__in=[
+                    "FETCHING",
+                    "PARSING",
+                    "CHUNKING",
+                    "SUMMARIZING",
+                    "RENDERING",
+                ],
+            ).count(),
+            "failed": Article.objects.filter(user=user, status="FAILED").count(),
         }
         return Response(stats)
 
@@ -104,6 +120,7 @@ class TagViewSet(viewsets.ModelViewSet):
     """
     API endpoint for tags
     """
+
     queryset = Tag.objects.all()  # Required for DRF router basename
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]

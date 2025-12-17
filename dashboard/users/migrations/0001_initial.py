@@ -16,28 +16,80 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserProfile',
+            name="UserProfile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('website', models.URLField(blank=True)),
-                ('location', models.CharField(blank=True, max_length=100)),
-                ('timezone', models.CharField(default='UTC', max_length=50)),
-                ('articles_submitted', models.PositiveIntegerField(default=0)),
-                ('articles_processed', models.PositiveIntegerField(default=0)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("website", models.URLField(blank=True)),
+                ("location", models.CharField(blank=True, max_length=100)),
+                ("timezone", models.CharField(default="UTC", max_length=50)),
+                ("articles_submitted", models.PositiveIntegerField(default=0)),
+                ("articles_processed", models.PositiveIntegerField(default=0)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserPreference',
+            name="UserPreference",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('output_format', models.CharField(choices=[('audio', 'Audio (MP3)'), ('text', 'Text Summary'), ('both', 'Both Audio and Text')], default='both', max_length=10)),
-                ('audio_quality', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], default='medium', max_length=10)),
-                ('auto_process', models.BooleanField(default=True)),
-                ('email_notifications', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='preferences', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "output_format",
+                    models.CharField(
+                        choices=[
+                            ("audio", "Audio (MP3)"),
+                            ("text", "Text Summary"),
+                            ("both", "Both Audio and Text"),
+                        ],
+                        default="both",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "audio_quality",
+                    models.CharField(
+                        choices=[
+                            ("low", "Low"),
+                            ("medium", "Medium"),
+                            ("high", "High"),
+                        ],
+                        default="medium",
+                        max_length=10,
+                    ),
+                ),
+                ("auto_process", models.BooleanField(default=True)),
+                ("email_notifications", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="preferences",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

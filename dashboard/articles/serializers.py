@@ -7,8 +7,8 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'color', 'article_count', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ["id", "name", "color", "article_count", "created_at"]
+        read_only_fields = ["id", "created_at"]
 
     def get_article_count(self, obj):
         return obj.articles.count()
@@ -23,15 +23,38 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = [
-            'id', 'backend_id', 'url', 'title', 'summary',
-            'status', 'error_message', 'word_count', 'chunk_count',
-            'created_at', 'updated_at', 'completed_at',
-            'is_favorite', 'tags', 'notes',
-            'is_processing', 'is_completed', 'has_error'
+            "id",
+            "backend_id",
+            "url",
+            "title",
+            "summary",
+            "status",
+            "error_message",
+            "word_count",
+            "chunk_count",
+            "created_at",
+            "updated_at",
+            "completed_at",
+            "is_favorite",
+            "tags",
+            "notes",
+            "is_processing",
+            "is_completed",
+            "has_error",
         ]
         read_only_fields = [
-            'id', 'backend_id', 'title', 'summary', 'status',
-            'error_message', 'word_count', 'chunk_count',
-            'created_at', 'updated_at', 'completed_at',
-            'is_processing', 'is_completed', 'has_error'
+            "id",
+            "backend_id",
+            "title",
+            "summary",
+            "status",
+            "error_message",
+            "word_count",
+            "chunk_count",
+            "created_at",
+            "updated_at",
+            "completed_at",
+            "is_processing",
+            "is_completed",
+            "has_error",
         ]

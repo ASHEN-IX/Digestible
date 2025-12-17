@@ -1,6 +1,7 @@
 """
 Pipeline package - Processing stages for article ingestion
 """
+
 from .fetch import fetch_article
 from .parse import parse_article
 from .chunk import chunk_article
@@ -10,7 +11,7 @@ from .orchestrator import process_article
 
 __all__ = [
     "fetch_article",
-    "parse_article", 
+    "parse_article",
     "chunk_article",
     "summarize_article",
     "render_article",

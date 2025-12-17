@@ -1,6 +1,7 @@
 """
 FastAPI application main entry point
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -19,9 +20,9 @@ async def lifespan(app: FastAPI):
     # Startup
     print(f"🚀 Starting {settings.app_name} API")
     print(f"📊 Environment: {settings.environment}")
-    
+
     yield
-    
+
     # Shutdown
     print("👋 Shutting down API")
 
@@ -68,5 +69,5 @@ async def health():
     return {
         "status": "healthy",
         "database": "connected",  # TODO: Add actual DB check
-        "redis": "connected",     # TODO: Add actual Redis check
+        "redis": "connected",  # TODO: Add actual Redis check
     }
