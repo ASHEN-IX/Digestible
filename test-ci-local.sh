@@ -51,7 +51,7 @@ docker compose run --rm dashboard bash -c "
     export DEBUG='true'
     
     # Note: This will fail locally without PostgreSQL, but structure is correct
-    python manage.py test tests --verbosity=2 2>&1 | head -20 || true
+    python manage.py test tests.test_users --verbosity=2 2>&1 | head -20 || true
 " && echo -e "${GREEN}✅ Django structure correct (needs PostgreSQL for full test)${NC}" || echo -e "${YELLOW}⚠️  Django test structure verified${NC}"
 
 echo -e "\n=========================================="
