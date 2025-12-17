@@ -1,6 +1,6 @@
 // Digestible Dashboard JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Initialize dashboard
   loadArticles();
   loadStats();
@@ -89,11 +89,14 @@ function renderArticles(articles) {
   const container = document.getElementById('articles-container');
 
   if (articles.length === 0) {
-    container.innerHTML = '<p class="text-muted">No articles yet. Submit your first article above!</p>';
+    container.innerHTML =
+      '<p class="text-muted">No articles yet. Submit your first article above!</p>';
     return;
   }
 
-  const html = articles.map(article => `
+  const html = articles
+    .map(
+      (article) => `
   <div class="card article-card mb-3">
    <div class="card-body">
   <div class="d-flex justify-content-between align-items-start">
@@ -116,7 +119,9 @@ function renderArticles(articles) {
   </div>
    </div>
   </div>
- `).join('');
+ `
+    )
+    .join('');
 
   container.innerHTML = html;
 }
