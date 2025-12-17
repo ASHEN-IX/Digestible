@@ -1,33 +1,20 @@
 from rest_framework import serializers
-from .models import User, UserProfile
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = [
-            'website', 'location', 'timezone',
-            'articles_submitted', 'articles_processed'
-        ]
+from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
-    full_name = serializers.CharField(read_only=True)
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'full_name', 'avatar', 'bio', 'date_joined', 'last_login',
-            'theme', 'notifications_enabled', 'profile'
+            'full_name', 'date_joined', 'last_login', 'is_active'
         ]
         read_only_fields = ['id', 'date_joined', 'last_login', 'full_name']
 
-    def update(self, instance, validated_data):
-        # Handle avatar upload
-        avatar = validated_data.pop('avatar', None)
-        if avatar:
+    def get_full_name(self, obj):
+        return obj.get_full_name() or obj.username
             instance.avatar = avatar
 
         return super().update(instance, validated_data)

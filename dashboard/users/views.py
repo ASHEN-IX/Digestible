@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
 
-from .models import User, UserProfile
+from django.contrib.auth.models import User
 from .serializers import UserSerializer, UserProfileSerializer
 
 

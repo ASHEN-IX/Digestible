@@ -1,5 +1,9 @@
 # Digestible - Phase 0 Complete! 🎉
 
+[![CI/CD Pipeline](https://github.com/kammounmedaziz/Digestible/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/kammounmedaziz/Digestible/actions/workflows/ci-cd.yml)
+[![Docker Build](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+
 Turn your 'Read Later' graveyard into an active audio playlist.
 
 ## ✅ Phase 0: Foundation & DevOps Complete
@@ -27,7 +31,38 @@ Turn your 'Read Later' graveyard into an active audio playlist.
                     └─────────────────┘
 ```
 
-## Project Structure
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker & Docker Compose
+- Python 3.11+
+- Node.js 18+ (for dashboard development)
+
+### Local Development
+```bash
+# Clone the repository
+git clone https://github.com/kammounmedaziz/Digestible.git
+cd Digestible
+
+# Copy environment file
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Run tests
+./build.sh test
+```
+
+### Services
+- **Backend API**: http://localhost:8000 (FastAPI)
+- **Dashboard**: http://localhost:8001 (Django)
+- **API Docs**: http://localhost:8000/docs
+- **Redis**: localhost:6379
 
 ```
 digestible/
