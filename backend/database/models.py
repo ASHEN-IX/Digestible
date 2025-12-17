@@ -2,7 +2,14 @@
 Database models for Digestible
 """
 
-from sqlalchemy import Column, String, DateTime, Text, Enum as SQLEnum, Integer
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.sql import func
 from datetime import datetime
 import enum
