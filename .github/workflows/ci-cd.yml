@@ -54,6 +54,7 @@ jobs:
     - name: Run linting
       run: |
         pip install -r ../requirements-dev.txt
+        echo "Black version: $(black --version)"
         black --check .
         ruff check .
 

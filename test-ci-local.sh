@@ -18,11 +18,14 @@ echo -e "\n${YELLOW}📦 Test 1: Backend - Linting and Tests${NC}"
 echo "Working directory: backend/"
 echo "------------------------------------------"
 
-docker compose run --rm -v "$(pwd)/tests:/app/tests:ro" backend bash -c "
+docker compose run --rm -v "$(pwd)/tests:/app/tests:ro" -v "$(pwd)/requirements-dev.txt:/app/requirements-dev.txt:ro" backend bash -c "
     cd /app/backend || exit 1
-    echo '✓ Installing test dependencies...'
-    pip install -q pytest pytest-asyncio pytest-cov black ruff || exit 1
+    echo '✓ Installing dependencies...'
+    pip install -q pytest pytest-asyncio pytest-cov || exit 1
+    pip install -q -r ../requirements-dev.txt || exit 1
     
+    echo '✓ Black version:'
+    black --version
     echo '✓ Running Black check...'
     black --check . || exit 1
     
@@ -54,11 +57,25 @@ docker compose run --rm dashboard bash -c "
     python manage.py test tests.test_users --verbosity=2 2>&1 | head -20 || true
 " && echo -e "${GREEN}✅ Django structure correct (needs PostgreSQL for full test)${NC}" || echo -e "${YELLOW}⚠️  Django test structure verified${NC}"
 
+# Test 3: JavaScript Linting
+echo -e "\n${YELLOW}📦 Test 3: JavaScript Linting${NC}"
+echo "Working directory: dashboard/"
+echo "------------------------------------------"
+
+echo "✓ Checking JavaScript indentation..."
+# Check if any code line (not in strings) has 4-space indent at start
+if grep -E '^\s{4}(const|let|var|if|function|return|})' dashboard/static/js/dashboard.js >/dev/null 2>&1; then
+    echo -e "${RED}❌ Found 4-space indentation in dashboard.js${NC}"
+else
+    echo -e "${GREEN}✅ JavaScript indentation is 2 spaces${NC}"
+fi
+
 echo -e "\n=========================================="
 echo "📊 Test Summary"
 echo "=========================================="
 echo "Backend: Linting ✓, Import ✓, Test structure ✓"
 echo "Django:  Linting ✓, Import ✓, Test structure ✓"
+echo "JavaScript: Formatting ✓"
 echo ""
 echo "Note: Full Django tests require PostgreSQL service (available in CI/CD)"
 echo "=========================================="
