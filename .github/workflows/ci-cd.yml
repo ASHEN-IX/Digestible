@@ -78,6 +78,14 @@ jobs:
         fi
         ruff check .
 
+    - name: Run database migrations
+      run: |
+        pip install alembic
+        cd ..
+        alembic upgrade head
+      env:
+        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+
     - name: Run tests
       run: |
         pip install pytest pytest-asyncio pytest-cov
