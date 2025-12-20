@@ -55,7 +55,14 @@ jobs:
       run: |
         pip install -r ../requirements-dev.txt
         echo "Black version: $(black --version)"
-        black --check .
+        # Run black in check mode, but first reformat to ensure consistency
+        black .
+        # Now check if there are any changes (there shouldn't be after formatting)
+        if ! git diff --quiet; then
+          echo "Files were reformatted by Black. Please run 'black .' locally and commit."
+          git diff
+          exit 1
+        fi
         ruff check .
 
     - name: Run tests
