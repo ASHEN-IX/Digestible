@@ -45,6 +45,25 @@ services:
       - redis
     restart: unless-stopped
 
+  # PostgreSQL Database (for development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: digestible-postgres
+    environment:
+      POSTGRES_DB: digestible
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # Redis (Job Queue + Cache)
   redis:
     image: redis:7-alpine
@@ -61,6 +80,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   redis_data:
   dashboard_media:
   dashboard_static:

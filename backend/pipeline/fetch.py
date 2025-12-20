@@ -22,7 +22,18 @@ async def fetch_article(url: str) -> Optional[str]:
         HTML content as string, or None if failed
     """
     try:
-        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+        }
+
+        async with httpx.AsyncClient(
+            timeout=30.0, follow_redirects=True, headers=headers
+        ) as client:
             response = await client.get(url)
             response.raise_for_status()
 
@@ -40,6 +51,9 @@ async def fetch_article(url: str) -> Optional[str]:
 
     except httpx.HTTPError as e:
         print(f"HTTP error fetching {url}: {e}")
+        print(
+            f"Response status: {e.response.status_code if hasattr(e, 'response') else 'Unknown'}"
+        )
         return None
     except Exception as e:
         print(f"Error fetching {url}: {e}")

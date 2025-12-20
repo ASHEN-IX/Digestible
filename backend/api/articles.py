@@ -89,6 +89,29 @@ async def submit_article(
     return article_data
 
 
+@router.get("/articles", response_model=list[ArticleResponse])
+async def list_articles(db: AsyncSession = Depends(get_db)):
+    """
+    List all articles
+    """
+    from sqlalchemy import select
+
+    result = await db.execute(select(Article).order_by(Article.created_at.desc()))
+    articles = result.scalars().all()
+
+    return [
+        ArticleResponse(
+            id=article.id,
+            url=article.url,
+            status=article.status.value,
+            title=article.title,
+            summary=article.summary,
+            created_at=article.created_at.isoformat(),
+        )
+        for article in articles
+    ]
+
+
 @router.get("/articles/{article_id}", response_model=ArticleResponse)
 async def get_article(article_id: str, db: AsyncSession = Depends(get_db)):
     """
