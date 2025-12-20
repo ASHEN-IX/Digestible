@@ -51,9 +51,7 @@ async def fetch_article(url: str) -> Optional[str]:
 
     except httpx.HTTPError as e:
         print(f"HTTP error fetching {url}: {e}")
-        print(
-            f"Response status: {e.response.status_code if hasattr(e, 'response') else 'Unknown'}"
-        )
+        print(f"Response status: {e.response.status_code if hasattr(e, 'response') else 'Unknown'}")
         return None
     except Exception as e:
         print(f"Error fetching {url}: {e}")
