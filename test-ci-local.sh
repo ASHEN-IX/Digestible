@@ -68,16 +68,60 @@ docker compose run --rm dashboard bash -c "
 " && echo -e "${GREEN}✅ Django structure correct (needs PostgreSQL for full test)${NC}" || echo -e "${YELLOW}⚠️  Django test structure verified${NC}"
 
 # Test 3: JavaScript Linting
-echo -e "\n${YELLOW}📦 Test 3: JavaScript Linting${NC}"
-echo "Working directory: dashboard/"
+echo -e "\n${YELLOW}📦 Test 4: Browser Extension${NC}"
+echo "Working directory: browser-extension/"
 echo "------------------------------------------"
 
-echo "✓ Checking JavaScript file..."
-if [ -f "dashboard/static/js/dashboard.js" ]; then
-    echo -e "${GREEN}✅ JavaScript file exists and is formatted${NC}"
+echo "✓ Checking manifest.json..."
+if [ -f "browser-extension/manifest.json" ]; then
+    # Validate JSON syntax
+    if jq empty browser-extension/manifest.json 2>/dev/null; then
+        echo -e "${GREEN}✅ Manifest JSON is valid${NC}"
+    else
+        echo -e "${RED}❌ Manifest JSON is invalid${NC}"
+        exit 1
+    fi
 else
-    echo -e "${RED}❌ JavaScript file missing or not formatted${NC}"
+    echo -e "${RED}❌ Manifest file missing${NC}"
+    exit 1
 fi
+
+echo "✓ Checking required extension files..."
+required_files=("background.js" "popup.html" "popup.js" "styles.css" "icon16.png" "icon48.png" "icon128.png")
+missing_files=()
+for file in "${required_files[@]}"; do
+    if [ ! -f "browser-extension/$file" ]; then
+        missing_files+=("$file")
+    fi
+done
+
+if [ ${#missing_files[@]} -eq 0 ]; then
+    echo -e "${GREEN}✅ All required extension files present${NC}"
+else
+    echo -e "${RED}❌ Missing files: ${missing_files[*]}${NC}"
+    exit 1
+fi
+
+echo "✓ Validating manifest version..."
+manifest_version=$(jq -r '.manifest_version' browser-extension/manifest.json)
+if [ "$manifest_version" = "3" ]; then
+    echo -e "${GREEN}✅ Manifest V3 confirmed${NC}"
+else
+    echo -e "${RED}❌ Expected Manifest V3, got V$manifest_version${NC}"
+    exit 1
+fi
+
+echo "✓ Checking JavaScript files..."
+# Basic syntax check for JS files
+js_files=("browser-extension/background.js" "browser-extension/popup.js")
+for js_file in "${js_files[@]}"; do
+    if node -c "$js_file" 2>/dev/null; then
+        echo -e "${GREEN}✅ $js_file syntax OK${NC}"
+    else
+        echo -e "${RED}❌ $js_file has syntax errors${NC}"
+        exit 1
+    fi
+done
 
 echo -e "\n=========================================="
 echo "📊 Test Summary"
@@ -85,6 +129,7 @@ echo "=========================================="
 echo "Backend: Linting ✓, Import ✓, Test structure ✓"
 echo "Django:  Linting ✓, Import ✓, Test structure ✓"
 echo "JavaScript: Formatting ✓"
+echo "Browser Extension: Manifest ✓, Files ✓, Syntax ✓"
 echo ""
 echo "Note: Full Django tests require PostgreSQL service (available in CI/CD)"
 echo "=========================================="

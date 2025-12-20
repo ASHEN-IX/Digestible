@@ -145,10 +145,60 @@ jobs:
         npm run format:check
         echo "✅ JavaScript code quality checks passed"
 
+  # Test Browser Extension
+  test-browser-extension:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install jq for JSON validation
+      run: sudo apt-get install -y jq
+
+    - name: Validate manifest.json
+      run: |
+        echo "🔍 Validating manifest.json..."
+        jq empty browser-extension/manifest.json
+        echo "✅ Manifest JSON is valid"
+
+    - name: Check required extension files
+      run: |
+        echo "📁 Checking required extension files..."
+        required_files=("background.js" "popup.html" "popup.js" "styles.css" "icon16.png" "icon48.png" "icon128.png")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "browser-extension/$file" ]; then
+            echo "❌ Missing file: $file"
+            exit 1
+          fi
+        done
+        echo "✅ All required extension files present"
+
+    - name: Validate manifest version
+      run: |
+        echo "🔢 Validating manifest version..."
+        manifest_version=$(jq -r '.manifest_version' browser-extension/manifest.json)
+        if [ "$manifest_version" != "3" ]; then
+          echo "❌ Expected Manifest V3, got V$manifest_version"
+          exit 1
+        fi
+        echo "✅ Manifest V3 confirmed"
+
+    - name: Check JavaScript syntax
+      run: |
+        echo "💻 Checking JavaScript syntax..."
+        node -c browser-extension/background.js
+        node -c browser-extension/popup.js
+        echo "✅ JavaScript syntax validation passed"
+
   # Build and Push Docker Images
   build-and-push:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-dashboard]
+    needs: [test-backend, test-dashboard, test-browser-extension]
     if: github.ref == 'refs/heads/main'
 
     permissions:
