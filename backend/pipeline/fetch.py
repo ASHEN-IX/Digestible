@@ -35,7 +35,9 @@ def fetch_article(url: str) -> Optional[str]:
             "Upgrade-Insecure-Requests": "1",
         }
 
-        response = requests.get(url, headers=headers, timeout=30.0, allow_redirects=True)
+        response = requests.get(
+            url, headers=headers, timeout=30.0, allow_redirects=True
+        )
         response.raise_for_status()
 
         # Check content type
