@@ -1,62 +1,17 @@
 services:
-  # FastAPI Backend
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: digestible-backend
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    environment:
-      - PYTHONPATH=/app
-      - REDIS_URL=redis://redis:6379/0
-    volumes:
-      - ./backend:/app/backend
-      - ./alembic:/app/alembic
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-
-  # Django Dashboard
-  dashboard:
-    build:
-      context: ./dashboard
-      dockerfile: Dockerfile
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-    container_name: digestible-dashboard
-    ports:
-      - "8001:8001"
-    env_file:
-      - .env
-    environment:
-      - FASTAPI_URL=http://backend:8000
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=redis://redis:6379/0
-    volumes:
-      - ./dashboard:/app
-      - dashboard_media:/app/media
-      - dashboard_static:/app/staticfiles
-    depends_on:
-      - backend
-      - redis
-    restart: unless-stopped
-
-  # PostgreSQL Database (for development)
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: digestible-postgres
     environment:
       POSTGRES_DB: digestible
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: digestible123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -79,8 +34,30 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: digestible-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+psycopg2://postgres:digestible123@postgres:5432/digestible
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backend:/app/backend
+      - ./alembic:/app/alembic
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
-  dashboard_media:
-  dashboard_static:

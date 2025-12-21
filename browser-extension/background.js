@@ -1,5 +1,8 @@
 // background.js - Service worker for job polling and notifications
 
+// API configuration
+const API_BASE_URL = 'http://localhost:8000';
+
 // Job tracking store
 let activeJobs = {};
 
@@ -46,7 +49,7 @@ async function pollActiveJobs() {
 // Check individual job status
 async function checkJobStatus(jobId) {
   try {
-    const response = await fetch(`http://localhost:8000/api/v1/articles/${jobId}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/articles/${jobId}`);
 
     if (!response.ok) {
       console.error(`Failed to fetch job ${jobId}: ${response.status}`);
@@ -55,11 +58,19 @@ async function checkJobStatus(jobId) {
 
     const data = await response.json();
 
+    // Update local storage with latest data
+    await updateLocalArticle(jobId, {
+      status: data.status,
+      title: data.title,
+      summary: data.summary,
+      updated_at: new Date().toISOString()
+    });
+
     if (data.status === 'COMPLETED') {
-      notifyUser(jobId, data.title || 'Your article');
+      notifyUser(jobId, data.title || 'Your article', 'completed');
       delete activeJobs[jobId];
     } else if (data.status === 'FAILED') {
-      notifyUserFailure(jobId);
+      notifyUser(jobId, 'Article processing failed', 'failed');
       delete activeJobs[jobId];
     }
     // Continue polling for other statuses
@@ -68,36 +79,54 @@ async function checkJobStatus(jobId) {
   }
 }
 
-// Notify user of completion
-function notifyUser(jobId, title) {
+// Update article in local storage
+async function updateLocalArticle(articleId, updates) {
+  try {
+    const result = await chrome.storage.local.get(['articles']);
+    const articles = result.articles || [];
+
+    const articleIndex = articles.findIndex(a => a.id === articleId);
+    if (articleIndex >= 0) {
+      articles[articleIndex] = { ...articles[articleIndex], ...updates };
+      await chrome.storage.local.set({ articles });
+
+      // Notify popup to refresh
+      chrome.runtime.sendMessage({
+        type: 'ARTICLE_UPDATED',
+        articleId: articleId,
+        updates: updates
+      });
+    }
+  } catch (error) {
+    console.error('Error updating local article:', error);
+  }
+}
+
+// Notify user of completion or failure
+function notifyUser(jobId, title, status) {
   const notificationId = `digestible-${jobId}`;
+
+  let message, iconUrl;
+  if (status === 'completed') {
+    message = `${title} has been processed and is ready!`;
+    iconUrl = 'icon48.png';
+  } else {
+    message = 'Failed to process your article. Please try again.';
+    iconUrl = 'icon48.png';
+  }
 
   chrome.notifications.create(notificationId, {
     type: 'basic',
-    iconUrl: 'icon48.png', // Extension icon
+    iconUrl: iconUrl,
     title: 'Digestible',
-    message: `${title} is ready. Click to read or listen.`
+    message: message,
+    requireInteraction: false
   });
 
-  // Handle notification click
-  chrome.notifications.onClicked.addListener((clickedId) => {
-    if (clickedId === notificationId) {
-      chrome.tabs.create({
-        url: `http://localhost:8001/articles/${jobId}` // Adjust URL as needed
-      });
-      chrome.notifications.clear(notificationId);
-    }
-  });
-}
-
-// Notify user of failure
-function notifyUserFailure(jobId) {
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: 'icon48.png',
-    title: 'Digestible',
-    message: 'Failed to process your article. Please try again.'
-  });
+  // Auto-clear notification after 5 seconds
+  setTimeout(() => {
+    chrome.notifications.clear(notificationId);
+  }, 5000);
 }
 
 // Handle messages from popup

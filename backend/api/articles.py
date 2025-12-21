@@ -4,23 +4,26 @@ API routes for article ingestion
 
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, HttpUrl
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from backend.database import Article, ArticleStatus, AsyncSessionLocal, get_db
+from backend.database import Article, ArticleStatus, SessionLocal, get_db
 from backend.pipeline import process_article
 
 router = APIRouter(prefix="/api/v1", tags=["articles"])
 
 
-async def process_article_with_session(article_id: str):
+def process_article_with_session(article_id: str):
     """
     Wrapper to process article with its own database session
     This is needed for background tasks
     """
-    async with AsyncSessionLocal() as db:
-        await process_article(article_id, db)
+    db = SessionLocal()
+    try:
+        process_article(article_id, db)
+    finally:
+        db.close()
 
 
 class ArticleSubmission(BaseModel):
@@ -41,21 +44,19 @@ class ArticleResponse(BaseModel):
     created_at: str
 
 
-@router.post("/articles", response_model=ArticleResponse, status_code=202)
-async def submit_article(
+@router.post("/articles", response_model=ArticleResponse, status_code=201)
+def submit_article(
     submission: ArticleSubmission,
-    background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     """
     Submit a new article for processing
-    Returns immediately with article ID
-    Processing happens in background
+    Processes synchronously for now
     """
     # Check if URL already exists
     from sqlalchemy import select
 
-    result = await db.execute(select(Article).where(Article.url == str(submission.url)))
+    result = db.execute(select(Article).where(Article.url == str(submission.url)))
     existing = result.scalar_one_or_none()
 
     if existing:
@@ -71,32 +72,36 @@ async def submit_article(
     )
 
     db.add(article)
-    await db.commit()
-    await db.refresh(article)
+    db.commit()
+    db.refresh(article)
 
-    # Store article_id for background processing
-    article_id = article.id
-    article_data = ArticleResponse(
+    # Process synchronously
+    success = process_article(article.id, db)
+
+    if success:
+        db.refresh(article)  # Refresh to get updated status
+    else:
+        article.status = ArticleStatus.FAILED
+        db.commit()
+
+    return ArticleResponse(
         id=article.id,
         url=article.url,
         status=article.status.value,
+        title=article.title,
+        summary=article.summary,
         created_at=article.created_at.isoformat(),
     )
 
-    # Process in background with new session
-    background_tasks.add_task(process_article_with_session, article_id)
-
-    return article_data
-
 
 @router.get("/articles", response_model=list[ArticleResponse])
-async def list_articles(db: AsyncSession = Depends(get_db)):
+def list_articles(db: Session = Depends(get_db)):
     """
     List all articles
     """
     from sqlalchemy import select
 
-    result = await db.execute(select(Article).order_by(Article.created_at.desc()))
+    result = db.execute(select(Article).order_by(Article.created_at.desc()))
     articles = result.scalars().all()
 
     return [
@@ -113,13 +118,13 @@ async def list_articles(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/articles/{article_id}", response_model=ArticleResponse)
-async def get_article(article_id: str, db: AsyncSession = Depends(get_db)):
+def get_article(article_id: str, db: Session = Depends(get_db)):
     """
     Get article status and content
     """
     from sqlalchemy import select
 
-    result = await db.execute(select(Article).where(Article.id == article_id))
+    result = db.execute(select(Article).where(Article.id == article_id))
     article = result.scalar_one_or_none()
 
     if not article:
@@ -136,20 +141,20 @@ async def get_article(article_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.delete("/articles/{article_id}", status_code=204)
-async def delete_article(article_id: str, db: AsyncSession = Depends(get_db)):
+def delete_article(article_id: str, db: Session = Depends(get_db)):
     """
     Delete an article
     """
     from sqlalchemy import delete as sql_delete
     from sqlalchemy import select
 
-    result = await db.execute(select(Article).where(Article.id == article_id))
+    result = db.execute(select(Article).where(Article.id == article_id))
     article = result.scalar_one_or_none()
 
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    await db.execute(sql_delete(Article).where(Article.id == article_id))
-    await db.commit()
+    db.execute(sql_delete(Article).where(Article.id == article_id))
+    db.commit()
 
     return None

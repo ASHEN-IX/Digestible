@@ -9,7 +9,6 @@ on:
 env:
   REGISTRY: ghcr.io
   BACKEND_IMAGE: ${{ github.repository }}/backend
-  DASHBOARD_IMAGE: ${{ github.repository }}/dashboard
 
 jobs:
   # Test Backend (FastAPI)
@@ -94,85 +93,6 @@ jobs:
         REDIS_URL: redis://localhost:6379/0
         DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
 
-  # Test Dashboard (Django)
-  test-dashboard:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./dashboard
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('dashboard/requirements.txt', 'requirements-dev.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: Cache npm dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('dashboard/package.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Install Node.js dependencies
-      run: npm install
-
-    - name: Run Django migrations
-      run: |
-        python manage.py migrate
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-        DJANGO_SECRET_KEY: test-secret-key
-        DEBUG: true
-
-    - name: Run Django tests
-      run: |
-        python manage.py test tests.test_users --verbosity=2
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-        DJANGO_SECRET_KEY: test-secret-key
-        DEBUG: true
-
-    - name: Run JavaScript linting and formatting
-      run: |
-        npm run lint
-        npm run format:check
-        echo "✅ JavaScript code quality checks passed"
-
   # Test Browser Extension
   test-browser-extension:
     runs-on: ubuntu-latest
@@ -226,7 +146,7 @@ jobs:
   # Build and Push Docker Images
   build-and-push:
     runs-on: ubuntu-latest
-    needs: [test-backend, test-dashboard, test-browser-extension]
+    needs: [test-backend, test-browser-extension]
     if: github.ref == 'refs/heads/main'
 
     permissions:
@@ -263,25 +183,6 @@ jobs:
         push: true
         tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
-
-    - name: Extract metadata for dashboard
-      id: meta-dashboard
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.DASHBOARD_IMAGE }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-
-    - name: Build and push dashboard image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./dashboard
-        push: true
-        tags: ${{ steps.meta-dashboard.outputs.tags }}
-        labels: ${{ steps.meta-dashboard.outputs.labels }}
 
   # Deploy to staging/production
   deploy:

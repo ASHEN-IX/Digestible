@@ -8,13 +8,33 @@
 </head>
 <body>
   <div class="container">
-    <h1>Digestible</h1>
-    <p>Submit an article URL for processing</p>
-    <form id="submit-form">
-      <input type="url" id="article-url" placeholder="https://example.com/article" required>
-      <button type="submit" id="submit-btn">Submit Article</button>
-    </form>
-    <div id="status" class="status"></div>
+    <h1>📚 Digestible</h1>
+
+    <!-- Submit Form -->
+    <div class="section">
+      <h2>Save Article</h2>
+      <form id="submit-form">
+        <input type="url" id="article-url" placeholder="https://example.com/article" required>
+        <button type="submit" id="submit-btn">💾 Save Article</button>
+      </form>
+      <div id="submit-status" class="status"></div>
+    </div>
+
+    <!-- Articles List -->
+    <div class="section">
+      <h2>Your Articles <span id="article-count">(0)</span></h2>
+      <div id="articles-list" class="articles-list">
+        <div class="loading">Loading articles...</div>
+      </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div id="article-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="article-detail"></div>
+      </div>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

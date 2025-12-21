@@ -22,6 +22,6 @@
   },
   "host_permissions": [
     "http://localhost:8000/*",
-    "https://your-domain.com/*"
+    "https://api.digestible.com/*"
   ]
 }

@@ -1,52 +1,186 @@
-# Digestible - Phase 0 Complete! 🎉
+# Digestible - Browser Extension Only
 
-[![CI/CD Pipeline](https://github.com/kammounmedaziz/Digestible/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/kammounmedaziz/Digestible/actions/workflows/ci-cd.yml)
-[![Docker Build](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
-
-Turn your 'Read Later' graveyard into an active audio playlist.
-
-## ✅ Phase 0: Foundation & DevOps Complete
-
-**All Phase 0 requirements implemented:**
-- ✅ **Dockerized Django + FastAPI + Redis + Postgres** - Full containerized stack
-- ✅ **.env for secrets + config** - Comprehensive environment management
-- ✅ **Prettier + lint for Python + JS** - Code quality tools configured
-- ✅ **CI/CD pipeline** - GitHub Actions for build, test, and deployment
-
-## Architecture Overview
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Django        │    │   FastAPI       │    │   Redis         │
-│   Dashboard     │◄──►│   Backend       │◄──►│   Queue/Cache   │
-│   (Port 8001)   │    │   (Port 8000)   │    │   (Port 6379)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   Neon Postgres │
-                    │   (Cloud DB)    │
-                    └─────────────────┘
-```
+A streamlined article processing platform that works entirely through your browser extension. No accounts, no dashboards - just save articles and get notifications when they're ready.
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Docker & Docker Compose
-- Python 3.11+
-- Node.js 18+ (for dashboard development)
+1. **Start the application:**
+   ```bash
+   cd /path/to/digestible
+   ./manage.sh start
+   ```
 
-### Local Development
+2. **Install the browser extension:**
+   - Open Chrome → `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `browser-extension/` folder
+
+3. **Use it:**
+   - Click the extension icon on any webpage
+   - Click "Save Article"
+   - Get notified when processing is complete
+   - View your saved articles in the extension
+
+## 📋 Features
+
+### ✅ What It Does
+- **One-click article saving** from any webpage
+- **Automatic processing** in the background
+- **Browser notifications** when articles are ready
+- **Local storage** - articles saved in your browser
+- **Offline access** to processed articles
+- **No accounts required** - works immediately
+
+### ✅ Technical Features
+- **FastAPI backend** for article processing
+- **PostgreSQL database** for data storage
+- **Redis queue** for background processing
+- **Docker containers** for easy deployment
+- **Chrome extension** with modern UI
+
+## 🛠️ Management
+
 ```bash
-# Clone the repository
-git clone https://github.com/kammounmedaziz/Digestible.git
-cd Digestible
+# Start all services
+./manage.sh start
 
-# Copy environment file
-cp .env.example .env
-# Edit .env with your database credentials
+# Stop all services
+./manage.sh stop
+
+# Check status
+./manage.sh status
+
+# View logs
+./manage.sh logs backend
+./manage.sh logs
+
+# Restart services
+./manage.sh restart
+```
+
+## 🔧 Architecture
+
+```
+┌─────────────────┐
+│  Browser        │
+│  Extension      │ ← Stores articles locally
+│  (Chrome)       │ ← Shows notifications
+└─────────────────┘
+        │
+        ▼
+┌─────────────────┐    ┌─────────────────┐
+│   FastAPI       │────│   PostgreSQL    │
+│   Backend       │    │   Database      │
+│   (Processing)  │    └─────────────────┘
+└─────────────────┘           ▲
+        │                     │
+        ▼                     │
+┌─────────────────┐           │
+│   Redis Queue   │ ──────────┘
+│   (Background   │
+│    Tasks)       │
+└─────────────────┘
+```
+
+## 📱 Browser Extension
+
+### Features
+- **Popup Interface**: Clean, modern design
+- **Article List**: View all your saved articles
+- **Status Tracking**: See processing progress
+- **Local Storage**: Articles stored in browser
+- **Notifications**: Get notified when processing completes
+
+### Files
+- `manifest.json` - Extension configuration
+- `popup.html/js` - Main interface
+- `background.js` - Background processing & notifications
+- `styles.css` - Modern UI styling
+
+## 🔌 API Endpoints
+
+- `POST /api/v1/articles` - Submit article for processing
+- `GET /api/v1/articles` - List all articles
+- `GET /api/v1/articles/{id}` - Get specific article
+- `GET /health` - Health check
+
+## 💾 Data Storage
+
+- **Server**: PostgreSQL database stores processed articles
+- **Browser**: Chrome local storage keeps article list and metadata
+- **Automatic Sync**: Extension polls server for updates
+
+## 🚨 Troubleshooting
+
+### Extension Not Working
+1. Check extension is loaded: `chrome://extensions/`
+2. Check API is running: `curl http://localhost:8000/health`
+3. Check browser console for errors
+
+### Services Not Starting
+```bash
+# Check Docker
+docker info
+
+# Check logs
+./manage.sh logs
+
+# Restart
+./manage.sh restart
+```
+
+### Database Issues
+```bash
+# Reset database
+./manage.sh stop
+docker volume rm digestible_postgres_data
+./manage.sh start
+```
+
+## 🔄 Development
+
+### Backend Development
+- Code changes auto-reload
+- Check logs: `./manage.sh logs backend`
+- API docs: `http://localhost:8000/docs`
+
+### Extension Development
+- Edit files in `browser-extension/`
+- Reload extension in `chrome://extensions/`
+- Test with live API
+
+## 📊 Performance
+
+- **Processing Time**: 10-30 seconds per article
+- **Storage**: Unlimited articles (server-side)
+- **Offline**: Access saved articles without internet
+- **Sync**: Automatic updates when online
+
+## 🎯 Use Cases
+
+- **Research**: Save articles for later reading
+- **Content Creation**: Collect sources and references
+- **Learning**: Build personal knowledge base
+- **Productivity**: Quick article processing and summaries
+
+## 🚀 Future Enhancements
+
+- [ ] AI-powered summaries
+- [ ] Article categorization
+- [ ] Search functionality
+- [ ] Export options
+- [ ] Multi-browser support
+- [ ] Mobile companion app
+
+---
+
+**Ready to save your first article?** 🚀
+
+```bash
+./manage.sh start
+# Then load the extension and start saving!
+```
 
 # Start all services
 docker compose up -d
@@ -60,7 +194,6 @@ docker compose logs -f
 
 ### Services
 - **Backend API**: http://localhost:8000 (FastAPI)
-- **Dashboard**: http://localhost:8001 (Django)
 - **API Docs**: http://localhost:8000/docs
 - **Redis**: localhost:6379
 
@@ -71,11 +204,7 @@ digestible/
 │   ├── pipeline/        # Processing pipeline stages
 │   ├── database/        # DB models & connections
 │   └── config/          # Configuration
-├── dashboard/           # Django dashboard & user auth
-│   ├── users/          # User management
-│   ├── articles/       # Article management
-│   ├── dashboard/      # Main dashboard app
-│   └── digestible/     # Django project settings
+├── browser-extension/   # Chrome extension with local storage
 ├── shared/              # Shared utilities
 ├── .github/workflows/   # CI/CD pipelines
 └── docker-compose.yml   # Multi-service orchestration
@@ -86,7 +215,7 @@ digestible/
 ### 1. Environment Setup
 ```bash
 cp .env.example .env
-# Edit .env with your Neon DATABASE_URL and generate DJANGO_SECRET_KEY
+# Edit .env with your DATABASE_URL
 ```
 
 ### 2. Start All Services
@@ -98,21 +227,17 @@ docker compose up -d
 ```bash
 # FastAPI backend migrations
 docker compose exec backend alembic upgrade head
-
-# Django dashboard migrations
-docker compose exec dashboard python manage.py migrate
 ```
 
-### 4. Create Admin User
-```bash
-docker compose exec dashboard python manage.py createsuperuser
-```
+### 4. Install Browser Extension
+- Open Chrome → `chrome://extensions/`
+- Enable "Developer mode"
+- Click "Load unpacked"
+- Select the `browser-extension/` folder
 
 ### 5. Access Applications
-- **Django Dashboard**: http://localhost:8001
 - **FastAPI API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
-- **Django Admin**: http://localhost:8001/admin
 
 ## Development Workflow
 
@@ -131,8 +256,8 @@ cd dashboard && npm run lint && npm run format
 # FastAPI tests
 docker compose exec backend pytest
 
-# Django tests
-docker compose exec dashboard python manage.py test
+# Browser extension tests
+./test-ci-local.sh
 ```
 
 ### Database Changes
@@ -140,10 +265,6 @@ docker compose exec dashboard python manage.py test
 # FastAPI schema changes
 docker compose exec backend alembic revision --autogenerate -m "description"
 docker compose exec backend alembic upgrade head
-
-# Django model changes
-docker compose exec dashboard python manage.py makemigrations
-docker compose exec dashboard python manage.py migrate
 ```
 
 ## API Endpoints
@@ -153,12 +274,6 @@ docker compose exec dashboard python manage.py migrate
 - `GET /api/v1/articles/{id}` - Get article status/details
 - `GET /health` - Health check
 - `GET /docs` - OpenAPI documentation
-
-### Django API (Port 8001)
-- `GET /api/users/me/` - Current user info
-- `GET /api/articles/` - User's articles
-- `POST /api/auth/login/` - User login
-- `POST /api/auth/register/` - User registration
 
 ## Pipeline Flow
 
@@ -179,21 +294,19 @@ Background task starts
 │  5. RENDER   → Output formats     │ ← Phase 1: TTS/audio
 └──────────────────────────────────┘
     ↓
-Store in Neon Postgres
+Store in PostgreSQL
     ↓
-Django dashboard displays results
+Browser extension displays results
 ```
 
 ## Environment Variables
 
 ### Required
-- `DATABASE_URL` - Neon Postgres connection string
-- `DJANGO_SECRET_KEY` - Django secret key (generate randomly)
+- `DATABASE_URL` - PostgreSQL connection string
 
 ### Optional
 - `REDIS_URL` - Redis connection (defaults to `redis://redis:6379/0`)
 - `DEBUG` - Enable debug mode (default: true)
-- `FASTAPI_URL` - FastAPI backend URL for Django (default: http://localhost:8000)
 
 ## Deployment
 
@@ -297,9 +410,8 @@ docker compose exec backend alembic upgrade head
 5. **RENDER**: Convert to output formats (placeholder)
 
 ## Next Steps (Phase 1+)
-- Django dashboard for user management
 - AI summarization integration
 - TTS audio rendering
-- Chrome extension
+- Enhanced browser extension features
 - Production deployment
 

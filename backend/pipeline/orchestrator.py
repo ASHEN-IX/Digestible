@@ -5,7 +5,7 @@ Pipeline Orchestrator - Coordinates all pipeline stages
 from datetime import datetime
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from backend.database.models import Article, ArticleStatus
 
@@ -16,7 +16,7 @@ from .render import render_article
 from .summarize import summarize_article
 
 
-async def process_article(article_id: str, db: AsyncSession) -> bool:
+def process_article(article_id: str, db: Session) -> bool:
     """
     Process an article through the complete pipeline
 
@@ -30,7 +30,7 @@ async def process_article(article_id: str, db: AsyncSession) -> bool:
     article = None
     try:
         # Get article from database using SQLAlchemy 2.0 syntax
-        result = await db.execute(select(Article).where(Article.id == article_id))
+        result = db.execute(select(Article).where(Article.id == article_id))
         article = result.scalar_one_or_none()
 
         if not article:
@@ -39,26 +39,26 @@ async def process_article(article_id: str, db: AsyncSession) -> bool:
 
         # Stage 1: FETCH
         article.status = ArticleStatus.FETCHING
-        await db.commit()
+        db.commit()
 
-        html = await fetch_article(article.url)
+        html = fetch_article(article.url)
         if not html:
             article.status = ArticleStatus.FAILED
             article.error_message = "Failed to fetch article"
-            await db.commit()
+            db.commit()
             return False
 
         article.raw_html = html
 
         # Stage 2: PARSE
         article.status = ArticleStatus.PARSING
-        await db.commit()
+        db.commit()
 
-        parsed = await parse_article(html)
+        parsed = parse_article(html)
         if not parsed:
             article.status = ArticleStatus.FAILED
             article.error_message = "Failed to parse article"
-            await db.commit()
+            db.commit()
             return False
 
         article.title = parsed["title"]
@@ -67,28 +67,28 @@ async def process_article(article_id: str, db: AsyncSession) -> bool:
 
         # Stage 3: CHUNK
         article.status = ArticleStatus.CHUNKING
-        await db.commit()
+        db.commit()
 
-        chunks = await chunk_article(parsed["text"])
+        chunks = chunk_article(parsed["text"])
         article.chunk_count = len(chunks)
 
         # Stage 4: SUMMARIZE
         article.status = ArticleStatus.SUMMARIZING
-        await db.commit()
+        db.commit()
 
-        summary = await summarize_article(chunks, parsed["title"])
+        summary = summarize_article(chunks, parsed["title"])
         article.summary = summary
 
         # Stage 5: RENDER
         article.status = ArticleStatus.RENDERING
-        await db.commit()
+        db.commit()
 
-        await render_article(summary, format="text")
+        render_article(summary, format="text")
 
         # Mark as completed
         article.status = ArticleStatus.COMPLETED
         article.completed_at = datetime.utcnow()
-        await db.commit()
+        db.commit()
 
         print(f"✅ Article {article_id} processed successfully")
         return True
@@ -100,8 +100,8 @@ async def process_article(article_id: str, db: AsyncSession) -> bool:
             try:
                 article.status = ArticleStatus.FAILED
                 article.error_message = str(e)
-                await db.commit()
+                db.commit()
             except Exception as commit_error:
                 print(f"❌ Failed to update article status: {commit_error}")
-                await db.rollback()
+                db.rollback()
         return False

@@ -6,7 +6,7 @@ Phase 0: Placeholder implementation
 from typing import List
 
 
-async def summarize_article(chunks: List[str], title: str) -> str:
+def summarize_article(chunks: List[str], title: str) -> str:
     """
     Generate summary from article chunks
 

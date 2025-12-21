@@ -2,7 +2,7 @@
 Database package initialization
 """
 
-from .connection import AsyncSessionLocal, Base, engine, get_db, init_db
+from .connection import SessionLocal, Base, engine, get_db, init_db
 from .models import Article, ArticleStatus
 
 __all__ = [
@@ -10,7 +10,7 @@ __all__ = [
     "init_db",
     "engine",
     "Base",
-    "AsyncSessionLocal",
+    "SessionLocal",
     "Article",
     "ArticleStatus",
 ]

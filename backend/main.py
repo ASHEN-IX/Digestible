@@ -50,7 +50,7 @@ app.include_router(articles_router)
 
 
 @app.get("/")
-async def root():
+def root():
     """
     Health check endpoint
     """
@@ -63,7 +63,7 @@ async def root():
 
 
 @app.get("/health")
-async def health():
+def health():
     """
     Detailed health check
     """

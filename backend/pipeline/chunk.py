@@ -9,7 +9,7 @@ from backend.config import get_settings
 settings = get_settings()
 
 
-async def chunk_article(text: str) -> List[str]:
+def chunk_article(text: str) -> List[str]:
     """
     Split article text into chunks for processing
 

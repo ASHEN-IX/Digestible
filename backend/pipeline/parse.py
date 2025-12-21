@@ -8,7 +8,7 @@ from typing import Dict, Optional
 from bs4 import BeautifulSoup
 
 
-async def parse_article(html: str) -> Optional[Dict[str, str]]:
+def parse_article(html: str) -> Optional[Dict[str, str]]:
     """
     Parse HTML and extract article content
 

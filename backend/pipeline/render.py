@@ -6,7 +6,7 @@ Phase 0: Placeholder implementation
 from typing import Any, Dict
 
 
-async def render_article(summary: str, format: str = "text") -> Dict[str, Any]:
+def render_article(summary: str, format: str = "text") -> Dict[str, Any]:
     """
     Render summary in requested format
 

@@ -1,52 +1,53 @@
 """
 Database connection and session management
-Async-only setup for Neon Postgres
+Synchronous setup using psycopg2
 """
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from backend.config import get_settings
 
 settings = get_settings()
 
-# Create async engine for Neon Postgres
-engine = create_async_engine(
+# Create synchronous engine
+engine = create_engine(
     settings.database_url,
     echo=settings.debug,
-    future=True,
     pool_pre_ping=True,
+    pool_size=2,
+    max_overflow=5,
+    pool_timeout=30,
+    pool_recycle=3600,
+    connect_args={"connect_timeout": 10},
 )
 
-# Async session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
+# Synchronous session factory
+SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
+    bind=engine,
 )
 
 # Base class for models
 Base = declarative_base()
 
 
-async def get_db():
+def get_db():
     """
     Dependency for FastAPI routes
-    Yields an async database session
+    Yields a synchronous database session
     """
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-async def init_db():
+def init_db():
     """
     Initialize database tables
     Only used for development/testing
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    Base.metadata.create_all(bind=engine)
