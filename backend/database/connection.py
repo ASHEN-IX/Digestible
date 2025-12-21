@@ -4,7 +4,7 @@ Synchronous setup using psycopg2
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from backend.config import get_settings
 
