@@ -83,7 +83,7 @@ jobs:
         cd ..
         alembic upgrade head
       env:
-        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+        DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/postgres
 
     - name: Run tests
       run: |
@@ -91,7 +91,7 @@ jobs:
         pytest ../tests/backend/ -v --cov=backend --cov-report=xml
       env:
         REDIS_URL: redis://localhost:6379/0
-        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+        DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/postgres
 
   # Test Browser Extension
   test-browser-extension:
