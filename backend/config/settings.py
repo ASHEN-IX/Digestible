@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://redis:6379/0"
 
+    # AI
+    openrouter_api_key: str
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+
     # Pipeline
     max_content_length: int = 1_000_000  # 1MB max article size
     chunk_size: int = 1000  # Characters per chunk

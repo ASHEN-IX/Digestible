@@ -1,41 +1,91 @@
 """
 Stage 4: SUMMARIZE - Generate summary from chunks
-Phase 0: Placeholder implementation
+Phase 1: OpenRouter AI integration
 """
 
+import json
 from typing import List
+
+import requests
+
+from backend.config import get_settings
+
+settings = get_settings()
 
 
 def summarize_article(chunks: List[str], title: str) -> str:
     """
-    Generate summary from article chunks
+    Generate summary from article chunks using OpenRouter AI
 
     Args:
         chunks: List of text chunks
         title: Article title
 
     Returns:
-        Summary text
+        AI-generated summary text
     """
-    # Phase 0: Simple placeholder
-    # Phase 1+: Integrate AI model (OpenAI, Claude, etc.)
+    try:
+        # Combine chunks into full text (limit to reasonable size)
+        full_text = " ".join(chunks)
+        if len(full_text) > 10000:  # Limit to 10k chars to avoid token limits
+            full_text = full_text[:10000] + "..."
 
-    total_words = sum(len(chunk.split()) for chunk in chunks)
+        # Create prompt for summarization
+        prompt = f"""Please provide a concise summary of the following article in 2-3 paragraphs.
+Focus on the main points and key takeaways.
 
-    summary = f"""
-    [PLACEHOLDER SUMMARY]
+Title: {title}
 
-    Title: {title}
-    Chunks processed: {len(chunks)}
-    Total words: {total_words}
+Article content:
+{full_text}
 
-    This is a placeholder summary. In Phase 1, this will be replaced with
-    AI-generated summaries using LLMs.
+Summary:"""
 
-    Key points will be extracted and formatted as:
-    • Point 1
-    • Point 2
-    • Point 3
-    """
+        # Call OpenRouter API directly with requests
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.openrouter_api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://digestible.app",
+                "X-Title": "Digestible",
+            },
+            json={
+                "model": "meta-llama/llama-3.2-3b-instruct:free",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            },
+            timeout=60
+        )
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        summary = result["choices"][0]["message"]["content"].strip()
 
-    return summary.strip()
+        # Add some metadata
+        total_words = sum(len(chunk.split()) for chunk in chunks)
+        metadata = f"\n\n📊 **Article Stats:** {len(chunks)} chunks, {total_words} words"
+
+        return summary + metadata
+
+    except Exception as e:
+        # Fallback to placeholder if AI fails
+        print(f"❌ OpenRouter API error: {e}")
+        total_words = sum(len(chunk.split()) for chunk in chunks)
+
+        return f"""
+        [AI SUMMARY UNAVAILABLE]
+
+        Title: {title}
+        Chunks processed: {len(chunks)}
+        Total words: {total_words}
+
+        Unable to generate AI summary due to API error: {str(e)}
+
+        Please check your OpenRouter API key and try again.
+        """.strip()
