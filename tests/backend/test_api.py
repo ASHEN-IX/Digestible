@@ -58,7 +58,7 @@ async def test_submit_article():
         assert "status" in data
         assert "url" in data
         assert data["url"] == unique_url
-        assert data["status"] == "FAILED"  # Processing fails for non-existent URL
+        assert data["status"] == "PENDING"  # Processing starts asynchronously
 
 
 @pytest.mark.asyncio
