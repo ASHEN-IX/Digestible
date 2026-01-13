@@ -22,7 +22,10 @@ openai==1.12.0  # Stable version for OpenRouter
 # google-genai==0.8.0
 
 # Redis (async client)
-redis[hiredis]==5.0.1
+redis[hiredis]==4.6.0
+
+# Async task processing
+celery[redis]==5.3.4
 
 # Development
 ruff==0.1.14

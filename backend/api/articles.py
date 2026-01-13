@@ -8,22 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 
-from backend.database import Article, ArticleStatus, SessionLocal, get_db
-from backend.pipeline import process_article
+from backend.database import Article, ArticleStatus, get_db
+from backend.tasks import process_article_task
 
 router = APIRouter(prefix="/api/v1", tags=["articles"])
-
-
-def process_article_with_session(article_id: str):
-    """
-    Wrapper to process article with its own database session
-    This is needed for background tasks
-    """
-    db = SessionLocal()
-    try:
-        process_article(article_id, db)
-    finally:
-        db.close()
 
 
 class ArticleSubmission(BaseModel):
@@ -51,7 +39,7 @@ def submit_article(
 ):
     """
     Submit a new article for processing
-    Processes synchronously for now
+    Processes asynchronously in background
     """
     # Check if URL already exists
     from sqlalchemy import select
@@ -75,14 +63,8 @@ def submit_article(
     db.commit()
     db.refresh(article)
 
-    # Process synchronously
-    success = process_article(article.id, db)
-
-    if success:
-        db.refresh(article)  # Refresh to get updated status
-    else:
-        article.status = ArticleStatus.FAILED
-        db.commit()
+    # Start async processing task
+    process_article_task.delay(article.id)
 
     return ArticleResponse(
         id=article.id,

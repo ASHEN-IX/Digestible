@@ -16,6 +16,50 @@ from .render import render_article
 from .summarize import summarize_article
 
 
+def process_article_pipeline(url: str) -> dict:
+    """
+    Process an article through the complete pipeline (without database operations)
+
+    Args:
+        url: Article URL to process
+
+    Returns:
+        Dictionary with processed article data
+    """
+    try:
+        # Stage 1: FETCH
+        html = fetch_article(url)
+        if not html:
+            raise ValueError("Failed to fetch article")
+
+        # Stage 2: PARSE
+        parsed = parse_article(html)
+        if not parsed:
+            raise ValueError("Failed to parse article")
+
+        # Stage 3: CHUNK
+        chunks = chunk_article(parsed["text"])
+
+        # Stage 4: SUMMARIZE
+        summary = summarize_article(chunks, parsed["title"])
+
+        # Stage 5: RENDER
+        render_article(summary, format="text")
+
+        return {
+            "title": parsed["title"],
+            "content": parsed["text"],
+            "summary": summary,
+            "chunks_count": len(chunks),
+            "word_count": parsed["word_count"],
+            "raw_html": html,
+        }
+
+    except Exception as e:
+        print(f"❌ Error processing article {url}: {e}")
+        raise
+
+
 def process_article(article_id: str, db: Session) -> bool:
     """
     Process an article through the complete pipeline
