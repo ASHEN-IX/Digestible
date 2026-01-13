@@ -1,8 +1,10 @@
 # Backend Tests
+import time
+
 import pytest
 from httpx import AsyncClient
+
 from backend.main import app
-import time
 
 
 @pytest.mark.asyncio

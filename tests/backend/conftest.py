@@ -3,6 +3,7 @@ Test configuration and fixtures for backend tests
 """
 
 import pytest
+
 from backend.database.connection import engine
 
 

@@ -3,7 +3,6 @@ Stage 4: SUMMARIZE - Generate summary from chunks
 Phase 1: OpenRouter AI integration
 """
 
-import json
 from typing import List
 
 import requests
