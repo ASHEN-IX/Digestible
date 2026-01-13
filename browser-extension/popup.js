@@ -108,7 +108,9 @@ async function handleSubmit(e) {
     }
   } catch (error) {
     console.error('Submission error:', error);
-    submitStatus.textContent = '❌ Failed to save article. Check if backend is running.';
+    console.log('API Base URL:', API_BASE_URL);
+    console.log('Error details:', error.message);
+    submitStatus.textContent = `❌ Error: ${error.message}`;
     submitStatus.className = 'status error';
   } finally {
     submitBtn.disabled = false;
@@ -214,9 +216,17 @@ async function showArticleDetail(articleId) {
         <div class="summary-content">${article.summary || 'Article is being processed...'}</div>
       </div>
       ${article.status === 'COMPLETED' ? `<div class="article-actions">
-        <button onclick="window.open('${article.url}', '_blank')">📖 Read Original</button>
+        <button id="read-original-btn" data-url="${article.url}">📖 Read Original</button>
       </div>` : ''}
     `;
+
+    // Add event listener for read original button
+    const readBtn = document.getElementById('read-original-btn');
+    if (readBtn) {
+      readBtn.addEventListener('click', () => {
+        chrome.tabs.create({ url: article.url });
+      });
+    }
 
     articleModal.style.display = 'block';
 

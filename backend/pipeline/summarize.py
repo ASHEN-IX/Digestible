@@ -52,19 +52,14 @@ Summary:"""
             },
             json={
                 "model": "meta-llama/llama-3.2-3b-instruct:free",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+                "messages": [{"role": "user", "content": prompt}],
             },
-            timeout=60
+            timeout=60,
         )
-        
+
         response.raise_for_status()
         result = response.json()
-        
+
         summary = result["choices"][0]["message"]["content"].strip()
 
         # Add some metadata

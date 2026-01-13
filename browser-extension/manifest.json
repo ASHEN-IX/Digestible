@@ -21,7 +21,8 @@
     "service_worker": "background.js"
   },
   "host_permissions": [
-    "http://localhost:8000/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
     "https://api.digestible.com/*"
   ]
 }
