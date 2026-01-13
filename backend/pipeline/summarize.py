@@ -24,6 +24,10 @@ def summarize_article(chunks: List[str], title: str) -> str:
         AI-generated summary text
     """
     try:
+        # Check if API key is configured
+        if not settings.openrouter_api_key:
+            raise ValueError("OpenRouter API key not configured")
+
         # Combine chunks into full text (limit to reasonable size)
         full_text = " ".join(chunks)
         if len(full_text) > 10000:  # Limit to 10k chars to avoid token limits
