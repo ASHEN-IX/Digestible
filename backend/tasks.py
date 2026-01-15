@@ -28,7 +28,7 @@ def process_article_task(self, article_id: int):
             db.commit()
 
         # Process the article
-        result = process_article_pipeline(article_url)
+        result = process_article_pipeline(article_url, article_id)
 
         # Update article with results
         with SessionLocal() as db:
@@ -37,6 +37,7 @@ def process_article_task(self, article_id: int):
                 article.title = result.get("title", "")
                 article.content = result.get("content", "")
                 article.summary = result.get("summary", "")
+                article.audio_path = result.get("audio_path")
                 article.status = ArticleStatus.COMPLETED
                 article.chunks_count = result.get("chunks_count", 0)
                 article.word_count = result.get("word_count", 0)

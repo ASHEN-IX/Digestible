@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.database.models import Article, ArticleStatus
+from backend.tts import generate_article_audio
 
 from .chunk import chunk_article
 from .fetch import fetch_article
@@ -16,12 +17,13 @@ from .render import render_article
 from .summarize import summarize_article
 
 
-def process_article_pipeline(url: str) -> dict:
+def process_article_pipeline(url: str, article_id: str = None) -> dict:
     """
     Process an article through the complete pipeline (without database operations)
 
     Args:
         url: Article URL to process
+        article_id: Optional article ID for audio file naming
 
     Returns:
         Dictionary with processed article data
@@ -43,13 +45,22 @@ def process_article_pipeline(url: str) -> dict:
         # Stage 4: SUMMARIZE
         summary = summarize_article(chunks, parsed["title"])
 
-        # Stage 5: RENDER
+        # Stage 5: GENERATE AUDIO
+        audio_path = None
+        if article_id:
+            try:
+                audio_path = generate_article_audio(article_id, summary)
+            except Exception as e:
+                print(f"⚠️  Audio generation failed, continuing without audio: {e}")
+
+        # Stage 6: RENDER
         render_article(summary, format="text")
 
         return {
             "title": parsed["title"],
             "content": parsed["text"],
             "summary": summary,
+            "audio_path": audio_path,
             "chunks_count": len(chunks),
             "word_count": parsed["word_count"],
             "raw_html": html,

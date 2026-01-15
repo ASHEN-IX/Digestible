@@ -34,15 +34,14 @@ def summarize_article(chunks: List[str], title: str) -> str:
             full_text = full_text[:10000] + "..."
 
         # Create prompt for summarization
-        prompt = f"""Please provide a concise summary of the following article in 2-3 paragraphs.
-Focus on the main points and key takeaways.
-
-Title: {title}
-
-Article content:
-{full_text}
-
-Summary:"""
+        prompt = (
+            "Please provide a concise summary of the following article as a bullet-point list.\n"
+            "Focus on the 5-7 most important points and key takeaways.\n"
+            "Use clear, actionable bullets.\n\n"
+            f"Title: {title}\n\n"
+            f"Article content:\n{full_text}\n\n"
+            "Summary (as bullet points):"
+        )
 
         # Call OpenRouter API directly with requests
         response = requests.post(

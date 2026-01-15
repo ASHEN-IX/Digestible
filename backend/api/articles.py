@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, HttpUrl
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.database import Article, ArticleStatus, get_db
@@ -140,3 +141,32 @@ def delete_article(article_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     return None
+
+
+@router.get("/articles/{article_id}/audio")
+def get_article_audio(article_id: str, db: Session = Depends(get_db)):
+    """
+    Get audio file for an article
+    """
+    from pathlib import Path
+
+    # Get article from database
+    result = db.execute(select(Article).where(Article.id == article_id))
+    article = result.scalar_one_or_none()
+
+    if not article or not article.audio_path:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Audio not found")
+
+    # Check if file exists
+    audio_file = Path(article.audio_path)
+    if not audio_file.exists():
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
+    # Return file
+    from fastapi.responses import FileResponse
+
+    return FileResponse(
+        path=audio_file, media_type="audio/wav", filename=f"article_{article_id}.wav"
+    )

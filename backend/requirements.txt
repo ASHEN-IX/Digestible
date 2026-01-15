@@ -27,6 +27,12 @@ redis[hiredis]==4.6.0
 # Async task processing
 celery[redis]==5.3.4
 
+# Text-to-Speech (moved to local GPU installation)
+# transformers==4.36.0
+# torch==2.1.0
+# torchaudio==2.1.0
+# scipy==1.11.0
+
 # Development
 ruff==0.1.14
 black==24.1.1

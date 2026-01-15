@@ -51,6 +51,7 @@ class Article(Base):
     raw_html = Column(Text, nullable=True)
     parsed_text = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
+    audio_path = Column(String, nullable=True)
 
     # Pipeline tracking
     status = Column(SQLEnum(ArticleStatus), default=ArticleStatus.PENDING, nullable=False)
