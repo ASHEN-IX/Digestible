@@ -4,23 +4,23 @@ A streamlined article processing platform that works entirely through your brows
 
 ## 🚀 Quick Start
 
-1. **Start the application:**
-   ```bash
-   cd /path/to/digestible
-   ./manage.sh start
-   ```
+### 1. Start the Application
+```bash
+cd /path/to/digestible
+./manage.sh start
+```
 
-2. **Install the browser extension:**
-   - Open Chrome → `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the `browser-extension/` folder
+### 2. Install the Browser Extension
+- Open Chrome → `chrome://extensions/`
+- Enable "Developer mode"
+- Click "Load unpacked"
+- Select the `browser-extension/` folder
 
-3. **Use it:**
-   - Click the extension icon on any webpage
-   - Click "Save Article"
-   - Get notified when processing is complete
-   - View your saved articles in the extension
+### 3. Use It
+- Click the extension icon on any webpage
+- Click "Save Article"
+- Get notified when processing is complete
+- View your saved articles in the extension
 
 ## 📋 Features
 
@@ -138,6 +138,32 @@ docker volume rm digestible_postgres_data
 ./manage.sh start
 ```
 
+### Services Won't Start (Advanced)
+```bash
+# Check logs
+docker compose logs
+
+# Rebuild containers
+docker compose down
+docker compose up --build
+```
+
+### Database Connection Issues
+```bash
+# Test connection
+docker compose exec backend python -c "from backend.database import engine; import asyncio; asyncio.run(engine.connect())"
+
+# Reset migrations
+docker compose exec backend alembic downgrade base
+docker compose exec backend alembic upgrade head
+```
+
+### Permission Issues
+```bash
+# Fix file permissions
+sudo chown -R $USER:$USER .
+```
+
 ## 🔄 Development
 
 ### Backend Development
@@ -182,73 +208,23 @@ docker volume rm digestible_postgres_data
 # Then load the extension and start saving!
 ```
 
-# Start all services
-docker compose up -d
+## 🔄 Development
 
-# View logs
-docker compose logs -f
+### Backend Development
+- Code changes auto-reload
+- Check logs: `./manage.sh logs backend`
+- API docs: `http://localhost:8000/docs`
 
-# Run tests
-./build.sh test
-```
-
-### Services
-- **Backend API**: http://localhost:8000 (FastAPI)
-- **API Docs**: http://localhost:8000/docs
-- **Redis**: localhost:6379
-
-```
-digestible/
-├── backend/              # FastAPI ingestion worker
-│   ├── api/             # API endpoints
-│   ├── pipeline/        # Processing pipeline stages
-│   ├── database/        # DB models & connections
-│   └── config/          # Configuration
-├── browser-extension/   # Chrome extension with local storage
-├── shared/              # Shared utilities
-├── .github/workflows/   # CI/CD pipelines
-└── docker-compose.yml   # Multi-service orchestration
-```
-
-## Quick Start
-
-### 1. Environment Setup
-```bash
-cp .env.example .env
-# Edit .env with your DATABASE_URL
-```
-
-### 2. Start All Services
-```bash
-docker compose up -d
-```
-
-### 3. Run Database Migrations
-```bash
-# FastAPI backend migrations
-docker compose exec backend alembic upgrade head
-```
-
-### 4. Install Browser Extension
-- Open Chrome → `chrome://extensions/`
-- Enable "Developer mode"
-- Click "Load unpacked"
-- Select the `browser-extension/` folder
-
-### 5. Access Applications
-- **FastAPI API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-
-## Development Workflow
+### Extension Development
+- Edit files in `browser-extension/`
+- Reload extension in `chrome://extensions/`
+- Test with live API
 
 ### Code Quality
 ```bash
 # Python linting (backend)
 docker compose exec backend black backend/
 docker compose exec backend ruff check backend/
-
-# JavaScript linting (dashboard)
-cd dashboard && npm run lint && npm run format
 ```
 
 ### Testing
@@ -266,14 +242,6 @@ docker compose exec backend pytest
 docker compose exec backend alembic revision --autogenerate -m "description"
 docker compose exec backend alembic upgrade head
 ```
-
-## API Endpoints
-
-### FastAPI Backend (Port 8000)
-- `POST /api/v1/articles` - Submit article for processing
-- `GET /api/v1/articles/{id}` - Get article status/details
-- `GET /health` - Health check
-- `GET /docs` - OpenAPI documentation
 
 ## Pipeline Flow
 
@@ -310,21 +278,51 @@ Browser extension displays results
 
 ## Deployment
 
-### Local Development
+### Docker Images
+
+The project provides pre-built Docker images available on both GitHub Container Registry and DockerHub:
+
+#### DockerHub
+- **Repository**: [vanistas/digestible-backend](https://hub.docker.com/repository/docker/vanistas/digestible-backend/)
+- **Latest Image**: `docker pull vanistas/digestible-backend:latest`
+- **Tags**: `latest`, branch-specific tags, and commit SHAs
+
+#### GitHub Container Registry
+- **Repository**: `ghcr.io/ASHEN-IX/digestible/backend`
+- **Latest Image**: `docker pull ghcr.io/ASHEN-IX/digestible/backend:latest`
+
+#### Usage Examples
+
+**Run with Docker Compose (Recommended):**
 ```bash
 docker compose up -d
 ```
 
-### Production
-The CI/CD pipeline automatically:
-- Runs tests on every push
-- Builds Docker images on main branch
-- Pushes to GitHub Container Registry
-- Deploys to production environment
-
-### Manual Deployment
+**Run Backend Only:**
 ```bash
-# Build images
+# Using DockerHub image
+docker run -d \
+  --name digestible-backend \
+  -p 8000:8000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e REDIS_URL="redis://..." \
+  vanistas/digestible-backend:latest
+
+# Using GHCR image
+docker run -d \
+  --name digestible-backend \
+  -p 8000:8000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e REDIS_URL="redis://..." \
+  ghcr.io/ASHEN-IX/digestible/backend:latest
+```
+
+**Manual Deployment:**
+```bash
+# Build images locally
+docker build -f Dockerfile.api -t digestible-backend .
+
+# Or use published images
 docker build -f Dockerfile.api -t digestible-backend .
 docker build -f dashboard/Dockerfile -t digestible-dashboard .
 
@@ -332,42 +330,17 @@ docker build -f dashboard/Dockerfile -t digestible-dashboard .
 docker compose -f docker-compose.prod.yml up -d
 ```
 
+### CI/CD Pipeline
+
+The CI/CD pipeline automatically:
+- Runs tests on every push to `main` and `develop` branches
+- Builds Docker images on successful tests
+- Pushes images to both GitHub Container Registry and DockerHub
+- Deploys to production environment (when configured)
+
+**Workflow Status**: [GitHub Actions](https://github.com/ASHEN-IX/Digestible/actions)
+
 ## Phase 1 Preview
-
-**Coming next:**
-- 🤖 **AI Summarization** - Replace placeholder with OpenAI/Claude
-- 🔊 **TTS Audio Rendering** - Text-to-speech integration
-- 🌐 **Chrome Extension** - One-click article saving
-- 📊 **Advanced Analytics** - Usage statistics and insights
-- 🎨 **Enhanced UI** - Modern dashboard with React/Vue
-
-## Troubleshooting
-
-### Services Won't Start
-```bash
-# Check logs
-docker compose logs
-
-# Rebuild containers
-docker compose down
-docker compose up --build
-```
-
-### Database Connection Issues
-```bash
-# Test Neon connection
-docker compose exec backend python -c "from backend.database import engine; import asyncio; asyncio.run(engine.connect())"
-
-# Reset migrations
-docker compose exec backend alembic downgrade base
-docker compose exec backend alembic upgrade head
-```
-
-### Permission Issues
-```bash
-# Fix file permissions
-sudo chown -R $USER:$USER .
-```
 
 ## Contributing
 
@@ -384,18 +357,3 @@ MIT License - see LICENSE file for details.
 ---
 
 **Phase 0 Complete!** 🚀 Ready for Phase 1 development.
-
-### Linting & Formatting
-```bash
-ruff check backend/
-black backend/
-```
-
-### Database Migrations
-```bash
-# Create migration
-docker compose exec backend alembic revision --autogenerate -m "description"
-
-# Apply migrations
-docker compose exec backend alembic upgrade head
-```
