@@ -35,11 +35,11 @@ def process_article_task(self, article_id: int):
             article = db.query(Article).filter(Article.id == article_id).first()
             if article:
                 article.title = result.get("title", "")
-                article.content = result.get("content", "")
+                article.parsed_text = result.get("content", "")
                 article.summary = result.get("summary", "")
                 article.audio_path = result.get("audio_path")
                 article.status = ArticleStatus.COMPLETED
-                article.chunks_count = result.get("chunks_count", 0)
+                article.chunk_count = result.get("chunks_count", 0)
                 article.word_count = result.get("word_count", 0)
                 db.commit()
 

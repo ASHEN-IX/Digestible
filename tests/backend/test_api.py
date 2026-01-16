@@ -5,21 +5,37 @@ import pytest
 from httpx import AsyncClient
 
 from backend.main import app
+from backend.database import get_db
 
 
 @pytest.mark.asyncio
 async def test_health_check():
     """Test health check endpoint"""
     from httpx import ASGITransport
+    from unittest.mock import Mock
+
+    # Mock database session
+    mock_db = Mock()
+    mock_db.execute.return_value = None
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://testserver"
     ) as client:
-        response = await client.get("/health")
-        assert response.status_code == 200
-        data = response.json()
-        assert "status" in data
-        assert data["status"] == "healthy"
+        # Override the database dependency
+        def mock_get_db():
+            yield mock_db
+
+        app.dependency_overrides[get_db] = mock_get_db
+
+        try:
+            response = await client.get("/health")
+            assert response.status_code == 200
+            data = response.json()
+            assert "status" in data
+            assert data["status"] == "healthy"
+        finally:
+            # Clean up
+            app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.mark.asyncio

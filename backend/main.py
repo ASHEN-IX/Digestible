@@ -4,11 +4,13 @@ FastAPI application main entry point
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from backend.api import articles_router
 from backend.config import get_settings
+from backend.database import get_db
 
 settings = get_settings()
 
@@ -67,12 +69,19 @@ def root():
 
 
 @app.get("/health")
-def health():
+def health(db: Session = Depends(get_db)):
     """
     Detailed health check
     """
+    try:
+        # Simple database check
+        db.execute("SELECT 1")
+        db_status = "connected"
+    except Exception:
+        db_status = "disconnected"
+    
     return {
-        "status": "healthy",
-        "database": "connected",  # TODO: Add actual DB check
+        "status": "healthy" if db_status == "connected" else "unhealthy",
+        "database": db_status,
         "redis": "connected",  # TODO: Add actual Redis check
     }

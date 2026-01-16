@@ -43,7 +43,6 @@ def submit_article(
     Processes asynchronously in background
     """
     # Check if URL already exists
-    from sqlalchemy import select
 
     result = db.execute(select(Article).where(Article.url == str(submission.url)))
     existing = result.scalar_one_or_none()
