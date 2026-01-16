@@ -217,14 +217,43 @@ async function showArticleDetail(articleId) {
       </div>
       ${article.status === 'COMPLETED' ? `<div class="article-actions">
         <button id="read-original-btn" data-url="${article.url}">📖 Read Original</button>
+        <button id="play-audio-btn" data-article-id="${articleId}">🔊 Play Audio Summary</button>
+        <audio id="article-audio" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
       </div>` : ''}
     `;
 
-    // Add event listener for read original button
+    // Add event listeners
     const readBtn = document.getElementById('read-original-btn');
     if (readBtn) {
       readBtn.addEventListener('click', () => {
         chrome.tabs.create({ url: article.url });
+      });
+    }
+
+    const playBtn = document.getElementById('play-audio-btn');
+    const audioElement = document.getElementById('article-audio');
+    if (playBtn && audioElement) {
+      playBtn.addEventListener('click', async () => {
+        try {
+          // Set audio source to the API endpoint
+          audioElement.src = `${API_BASE_URL}/api/v1/articles/${articleId}/audio`;
+          audioElement.style.display = 'block';
+          audioElement.play();
+
+          // Update button text
+          playBtn.textContent = '🔊 Playing...';
+          playBtn.disabled = true;
+
+          // Re-enable button when audio ends
+          audioElement.addEventListener('ended', () => {
+            playBtn.textContent = '🔊 Play Audio Summary';
+            playBtn.disabled = false;
+          });
+
+        } catch (error) {
+          console.error('Error playing audio:', error);
+          playBtn.textContent = '❌ Audio Error';
+        }
       });
     }
 

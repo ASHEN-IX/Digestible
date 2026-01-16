@@ -18,14 +18,18 @@ async def lifespan(app: FastAPI):
     """
     Application lifespan events
     """
-    # Startup
-    print(f"🚀 Starting {settings.app_name} API")
-    print(f"📊 Environment: {settings.environment}")
+    try:
+        # Startup
+        print(f"🚀 Starting {settings.app_name} API")
+        print(f"📊 Environment: {settings.environment}")
 
-    yield
+        yield
 
-    # Shutdown
-    print("👋 Shutting down API")
+        # Shutdown
+        print("👋 Shutting down API")
+    except Exception as e:
+        print(f"❌ Lifespan error: {e}")
+        raise
 
 
 # Create FastAPI app

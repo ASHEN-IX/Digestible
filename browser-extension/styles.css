@@ -290,7 +290,10 @@ button:disabled {
 
 .article-actions {
   margin-top: 20px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
 
 .article-actions button {
@@ -302,10 +305,24 @@ button:disabled {
   cursor: pointer;
   font-size: 14px;
   transition: background 0.2s;
+  width: 100%;
+  max-width: 200px;
 }
 
-.article-actions button:hover {
+.article-actions button:hover:not(:disabled) {
   background: #5a67d8;
+}
+
+.article-actions button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.article-actions audio {
+  width: 100%;
+  max-width: 250px;
+  margin-top: 10px;
+  border-radius: 4px;
 }
 
 /* Responsive adjustments */

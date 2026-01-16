@@ -1,4 +1,5 @@
 # Backend Integration Tests
+import os
 import time
 from unittest.mock import patch
 
@@ -6,6 +7,9 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Set test database URL before importing models
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 from backend.main import app
 from backend.database.models import Article, ArticleStatus
@@ -15,7 +19,10 @@ from backend.database.connection import Base, get_db
 @pytest.fixture(scope="session")
 def test_db_engine():
     """Create in-memory SQLite database for tests"""
-    engine = create_engine("sqlite:///:memory:", echo=False)
+    from sqlalchemy import create_engine
+    from backend.database.models import Base
+    
+    engine = create_engine("sqlite:///:memory:", echo=False, connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -25,13 +32,28 @@ def test_db_engine():
 @pytest.fixture(scope="function")
 def test_db_session(test_db_engine):
     """Create test database session"""
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
-    session = SessionLocal()
+    from backend.database.connection import SessionLocal
+    
+    # Temporarily replace the global SessionLocal with test session factory
+    original_sessionmaker = SessionLocal
+    test_sessionmaker = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
+    
+    # Monkey patch the global SessionLocal
+    import backend.database.connection
+    backend.database.connection.SessionLocal = test_sessionmaker
+    
+    # Create tables in test database
+    from backend.database.models import Base
+    Base.metadata.create_all(bind=test_db_engine)
+    
+    session = test_sessionmaker()
     try:
         yield session
     finally:
         session.rollback()
         session.close()
+        # Restore original SessionLocal
+        backend.database.connection.SessionLocal = original_sessionmaker
 
 
 class TestArticleProcessingPipeline:

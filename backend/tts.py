@@ -1,35 +1,23 @@
 """
-Text-to-Speech functionality using Hugging Face models
+Text-to-Speech functionality using Google TTS
 """
 
 import tempfile
 from pathlib import Path
 
-from transformers import pipeline
+from gtts import gTTS
 
 
 class TTSService:
-    """Text-to-Speech service using Hugging Face models"""
+    """Text-to-Speech service using Google TTS"""
 
     def __init__(self):
-        # Use a lightweight TTS model
-        self.tts = pipeline(
-            "text-to-speech", model="microsoft/speecht5_tts", device="cpu"  # Use CPU for now
-        )
-
-        # Load speaker embeddings (required for SpeechT5)
-        from transformers import SpeechT5Processor
-
-        self.processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
-
-        # Use default speaker embedding (you can customize this)
-        import torch
-
-        self.speaker_embeddings = torch.randn(1, 512)  # Random speaker embedding
+        # Google TTS doesn't need initialization
+        pass
 
     def generate_audio(self, text: str, output_path: str = None) -> str:
         """
-        Generate audio from text
+        Generate audio from text using Google TTS
 
         Args:
             text: Text to convert to speech
@@ -42,20 +30,12 @@ class TTSService:
             # Create temp file
             temp_dir = Path(tempfile.gettempdir()) / "digestible_audio"
             temp_dir.mkdir(exist_ok=True)
-            output_path = temp_dir / f"tts_{hash(text)}.wav"
+            output_path = temp_dir / f"tts_{hash(text)}.mp3"
 
         try:
-            # Generate speech
-            result = self.tts(
-                text,
-                speaker_embeddings=self.speaker_embeddings,
-                vocoder=None,  # Use default vocoder
-            )
-
-            # Save to file
-            import scipy.io.wavfile
-
-            scipy.io.wavfile.write(output_path, rate=result["sampling_rate"], data=result["audio"])
+            # Generate speech using Google TTS
+            tts = gTTS(text=text, lang='en', slow=False)
+            tts.save(str(output_path))
 
             return str(output_path)
 
