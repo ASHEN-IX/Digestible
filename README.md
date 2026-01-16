@@ -399,19 +399,3 @@ docker compose exec backend alembic revision --autogenerate -m "description"
 # Apply migrations
 docker compose exec backend alembic upgrade head
 ```
-
-## Architecture
-
-**Phase 0 Pipeline:**
-1. **FETCH**: Download HTML content
-2. **PARSE**: Extract article text
-3. **CHUNK**: Split into processable segments
-4. **SUMMARIZE**: Generate summary (placeholder)
-5. **RENDER**: Convert to output formats (placeholder)
-
-## Next Steps (Phase 1+)
-- AI summarization integration
-- TTS audio rendering
-- Enhanced browser extension features
-- Production deployment
-
