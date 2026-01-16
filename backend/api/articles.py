@@ -170,6 +170,4 @@ def get_article_audio(article_id: str, db: Session = Depends(get_db)):
     media_type = "audio/mpeg" if audio_file.suffix.lower() == ".mp3" else "audio/wav"
     filename = f"article_{article_id}{audio_file.suffix}"
 
-    return FileResponse(
-        path=audio_file, media_type=media_type, filename=filename
-    )
+    return FileResponse(path=audio_file, media_type=media_type, filename=filename)

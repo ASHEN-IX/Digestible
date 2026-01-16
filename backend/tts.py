@@ -34,7 +34,7 @@ class TTSService:
 
         try:
             # Generate speech using Google TTS
-            tts = gTTS(text=text, lang='en', slow=False)
+            tts = gTTS(text=text, lang="en", slow=False)
             tts.save(str(output_path))
 
             return str(output_path)

@@ -79,7 +79,7 @@ def health(db: Session = Depends(get_db)):
         db_status = "connected"
     except Exception:
         db_status = "disconnected"
-    
+
     return {
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,

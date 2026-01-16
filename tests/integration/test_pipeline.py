@@ -21,8 +21,10 @@ def test_db_engine():
     """Create in-memory SQLite database for tests"""
     from sqlalchemy import create_engine
     from backend.database.models import Base
-    
-    engine = create_engine("sqlite:///:memory:", echo=False, connect_args={"check_same_thread": False})
+
+    engine = create_engine(
+        "sqlite:///:memory:", echo=False, connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -33,19 +35,21 @@ def test_db_engine():
 def test_db_session(test_db_engine):
     """Create test database session"""
     from backend.database.connection import SessionLocal
-    
+
     # Temporarily replace the global SessionLocal with test session factory
     original_sessionmaker = SessionLocal
     test_sessionmaker = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
-    
+
     # Monkey patch the global SessionLocal
     import backend.database.connection
+
     backend.database.connection.SessionLocal = test_sessionmaker
-    
+
     # Create tables in test database
     from backend.database.models import Base
+
     Base.metadata.create_all(bind=test_db_engine)
-    
+
     session = test_sessionmaker()
     try:
         yield session
@@ -62,6 +66,7 @@ class TestArticleProcessingPipeline:
     @pytest.mark.asyncio
     async def test_article_submission_and_storage(self, test_db_session):
         """Test article submission and database storage"""
+
         # Override the database dependency
         def override_get_db():
             yield test_db_session
@@ -75,8 +80,7 @@ class TestArticleProcessingPipeline:
                 # Submit article
                 unique_url = f"https://example.com/test-integration-{int(time.time())}"
                 response = await client.post(
-                    "/api/v1/articles",
-                    json={"url": unique_url, "user_id": "integration_test"}
+                    "/api/v1/articles", json={"url": unique_url, "user_id": "integration_test"}
                 )
 
                 assert response.status_code == 201
@@ -98,6 +102,7 @@ class TestArticleProcessingPipeline:
     @pytest.mark.asyncio
     async def test_article_retrieval(self, test_db_session):
         """Test article status retrieval"""
+
         # Override the database dependency
         def override_get_db():
             yield test_db_session
@@ -111,8 +116,7 @@ class TestArticleProcessingPipeline:
                 # First submit an article
                 unique_url = f"https://example.com/test-get-{int(time.time())}"
                 submit_response = await client.post(
-                    "/api/v1/articles",
-                    json={"url": unique_url, "user_id": "test_user"}
+                    "/api/v1/articles", json={"url": unique_url, "user_id": "test_user"}
                 )
                 assert submit_response.status_code == 201
                 article_data = submit_response.json()

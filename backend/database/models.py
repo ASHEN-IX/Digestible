@@ -44,11 +44,7 @@ class Article(Base):
 
     __tablename__ = "articles"
     # Only use schema for PostgreSQL databases
-    __table_args__ = (
-        {"schema": "public"}
-        if "postgresql" in settings.database_url
-        else {}
-    )
+    __table_args__ = {"schema": "public"} if "postgresql" in settings.database_url else {}
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=False, index=True)

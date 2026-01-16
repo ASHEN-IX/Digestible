@@ -20,7 +20,7 @@ def test_settings():
         database_url="sqlite:///./test.db",
         redis_url="redis://localhost:6379/1",  # Use different DB for tests
         openrouter_api_key="test_key",
-        openrouter_base_url="https://openrouter.ai/api/v1"
+        openrouter_base_url="https://openrouter.ai/api/v1",
     )
 
 
