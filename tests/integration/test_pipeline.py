@@ -1,25 +1,24 @@
 # Backend Integration Tests
 import os
 import time
-from unittest.mock import patch
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy import create_engine
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.orm import sessionmaker
+
+from backend.database.connection import get_db
+from backend.database.models import Article, ArticleStatus
+from backend.main import app
 
 # Set test database URL before importing models
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-
-from backend.main import app
-from backend.database.models import Article, ArticleStatus
-from backend.database.connection import Base, get_db
 
 
 @pytest.fixture(scope="session")
 def test_db_engine():
     """Create in-memory SQLite database for tests"""
     from sqlalchemy import create_engine
+
     from backend.database.models import Base
 
     engine = create_engine(

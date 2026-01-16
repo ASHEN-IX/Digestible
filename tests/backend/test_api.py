@@ -4,15 +4,16 @@ import time
 import pytest
 from httpx import AsyncClient
 
-from backend.main import app
 from backend.database import get_db
+from backend.main import app
 
 
 @pytest.mark.asyncio
 async def test_health_check():
     """Test health check endpoint"""
-    from httpx import ASGITransport
     from unittest.mock import Mock
+
+    from httpx import ASGITransport
 
     # Mock database session
     mock_db = Mock()

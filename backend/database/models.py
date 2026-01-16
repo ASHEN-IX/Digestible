@@ -18,6 +18,7 @@ from sqlalchemy import (
 from sqlalchemy.sql import func
 
 from backend.config import get_settings
+
 from .connection import Base
 
 settings = get_settings()

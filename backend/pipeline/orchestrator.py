@@ -2,10 +2,6 @@
 Pipeline Orchestrator - Coordinates all pipeline stages
 """
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from backend.database.models import Article, ArticleStatus
 from backend.tts import generate_article_audio
 
 from .chunk import chunk_article
