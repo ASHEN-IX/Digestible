@@ -90,8 +90,6 @@ cd /path/to/digestible
 - **Article List**: View all your saved articles
 - **Status Tracking**: See processing progress
 - **Local Storage**: Articles stored in browser
-- **Notifications**: Get notified when processing completes
-
 ### Files
 - `manifest.json` - Extension configuration
 - `popup.html/js` - Main interface
@@ -197,8 +195,6 @@ sudo chown -R $USER:$USER .
 - [ ] Search functionality
 - [ ] Export options
 - [ ] Multi-browser support
-- [ ] Mobile companion app
-
 ---
 
 **Ready to save your first article?** 🚀
@@ -340,7 +336,6 @@ The CI/CD pipeline automatically:
 
 **Workflow Status**: [GitHub Actions](https://github.com/ASHEN-IX/Digestible/actions)
 
-## Phase 1 Preview
 
 ## Contributing
 
@@ -350,10 +345,6 @@ The CI/CD pipeline automatically:
 4. Run tests: `docker compose exec backend pytest`
 5. Submit a pull request
 
-## License
-
-MIT License - see LICENSE file for details.
 
 ---
 
-**Phase 0 Complete!** 🚀 Ready for Phase 1 development.
