@@ -188,14 +188,7 @@ sudo chown -R $USER:$USER .
 - **Learning**: Build personal knowledge base
 - **Productivity**: Quick article processing and summaries
 
-## 🚀 Future Enhancements
 
-- [ ] AI-powered summaries
-- [ ] Article categorization
-- [ ] Search functionality
-- [ ] Export options
-- [ ] Multi-browser support
----
 
 **Ready to save your first article?** 🚀
 
