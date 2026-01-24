@@ -29,7 +29,6 @@ cd /path/to/digestible
 - **Automatic processing** in the background
 - **Browser notifications** when articles are ready
 - **Local storage** - articles saved in your browser
-- **Offline access** to processed articles
 - **No accounts required** - works immediately
 
 ### ✅ Technical Features
